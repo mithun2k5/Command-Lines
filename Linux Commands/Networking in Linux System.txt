@@ -1,0 +1,77 @@
+**Learning Source: www.udemy.com
+
+Finding IP address in linux system:
+#####################################
+
+1) ifconfig -a or
+2) ip address or ip address show or ip a s
+
+Finding hostname in linux system:
+#########################################
+1) hostname or
+2) hostname -f or
+3) uname -n
+
+
+Configuring hostname:(For Redhat/Ubuntu/CentOS)
+####################################
+1) vi /etc/sysconfig/network
+HOSTNAME=router01
+or
+2)hostname router01
+3)echo 'router01' > /etc/hostname
+
+Resolving DNS name:
+####################################
+1) host
+2) dig
+
+Configuring DHCP clients:
+######################################
+
+Ubuntu: 
+#############
+/etc/network/interfaces
+auto etho
+iface etho inet dhcp
+
+RedHat:
+###############
+/etc/sysconfig/network-scripts/ifcfg-DEVICE
+/etc/sysconfig/network-scripts/ifcfg-eth0
+
+Assigning a static IP address:
+######################################
+RedHat:
+#######################################
+/etc/sysconfig/network-scripts/ifcfg-eth0
+
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=X.X.X.X
+NETMASK=X.X.X.X
+NETWORK=X.X.X.X
+BROADCAST=X.X.X.X
+GATEWAY=X.X.X.X
+ONBOOT=yes
+
+Ubuntu: 
+#############
+/etc/network/interfaces
+auto eth0
+iface eth0 inet static
+address=X.X.X.X
+netmask=X.X.X.X
+gateway=X.X.X.X
+
+Manually assigning an IP address:
+###########################################
+ip address add X.X.X.X/subnet mask dev eth0
+ip link set eth0 up
+or 
+ifconfig eth0 X.X.X.X netmask X.X.X.X
+ifconfig eth0 up
+
+Interface shut-down/up:
+#########################################
+ifup eth0 or ifdown eth0

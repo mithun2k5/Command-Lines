@@ -1,0 +1,25 @@
+**learning source:ITversity-YouTube Channel
+
+#find 
+#which jar
+#find / -name "jar" -type f 
+#find / -name "*.log" -type f -mtime 
+/;stands for path
+
+#mtime for modified time and +1 is before today -1 is today.
+
+#date
+
+Show files with file properties:
+#################################
+#find /var -name "*.log" -type f -mtime -1 -exec ls -ltr {} \;
+
+#mkdir -p dir1/dir2/dir3
+#touch dir1/dir2/dir3/testing
+
+#pwd;gives home directory
+#.;current directory and ..;parent directory
+
+#find . -name "testing" -type f -exec rm {} \;
+
+#find --help

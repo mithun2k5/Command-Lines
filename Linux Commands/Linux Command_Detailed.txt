@@ -1,0 +1,543 @@
+**Learning Source:www.udemy.com
+
+Basic Linux Command:
+##################################
+Linux is an operating system.
+It is FOSS (Free/Open Source Software)
+
+Linux Kernel: is the heart of the operating system.It situates between hardware and application. It is an intermediary between hardware and software.
+
+Remote Login to the host:
+#######################################
+#ssh username(root)@hostname or ip address(X.X.X.X)
+
+#date
+#uptime
+#/etc system configuration file
+#/var variable data,most notably log files.
+#/dev Device files typically controlled and configured by the OS and system administrators.
+
+Shell:
+###################
+It is a default user interface to the Linux.In other words,a program that accepts commands and execute those commands.
+
+~;represents current account user's home directory.
+
+Tilde Expansion:
+###########################
+~ftp = /srv/ftp
+~root = /root
+
+Linux Commands:
+################################
+ls:lists directory contents
+echo:displays content of the variables.
+#man:online manual
+
+Environmental Varaibles:
+######################################
+Storage location that has a name and value
+PATH: an environmental varibale that controls the command search path.
+
+which Command:
+#################
+which;locate a command
+#which cat
+#ehich tac
+#ls /bin
+#ls --help
+#man -k calendar; it finds out which command needs to run
+#cal; displays calendar
+
+Generating Random Data Using Linux Command:
+################################################
+##dd if=/dev/urandom of=target-file bs=1M count=100
+dd;read blocks of data from an inout file and write them to the output file.
+if;input file
+of;output file
+bs;block size
+count;number of blocks to read from if and write to of.
+
+Directory:
+######################################################
+#cd -;change to previous directory
+#pwd
+# cd /var/tmp
+#echo $OLDPWD
+#mkdir -p /dir1/dir2/dir3
+#rm -rf directory_name
+#rmdir;if the directory is empty
+
+ls Command:
+############################################
+ls -F;reveals file type
+/=Directory
+@=Link
+*=Executable
+Symbolik links:a point to the actual file or directory.
+ls -latr
+ls -d
+ls --color
+ls -R;list files recursively
+Visual Output:
+tree -d;list directory
+tree -C;Colorize output
+
+Permission
+########################################
+-rw-rw-r--;
+-;regular file
+d;directory
+l;symbolic link
+
+Permission Categories:
+U;user
+g;group
+o;other
+a;all
+
+#groups; to show,user in which group
+or
+#id -Gn
+#groups root
+
+Add permission to particular file:
+#chmod u+w example.txt
+#chmod u+wx example.txt
+#chmod u+rwx,g-x example.txt
+#chmod a=rw example.txt
+#chmod u=rwx,g=rx,o= example.txt;means no permission to others.
+
+Changing Groups:
+#groups
+#chgrp default example.txt
+
+Umask Command: Works in the opposite way as mode given to chmod.
+#umask -S
+
+Base permission for directory is 777 and for file is 666.
+and initial umask is 022 
+#mkdir test
+#cd test
+#umask
+#umask -S
+#touch testing;create a file or update a timestamp.
+#umask 007
+
+Finding Files and Directories:
+#####################################################
+#find /bin -name example.txt
+#find /bin -iname example.txt;i used for case-insensitive search
+#find . -mtime +10 -mtime -13; serch a file that are modified 10 days old but less trhan 13 days old
+#find . -name s* -ls;after searching then executing ls command
+#find . -size +1M
+#find . -type d -newer file.txt;searching for directories that are newer than file.txt
+#file .bash_profile;represents file content type.
+#find . -exec file {} \;
+
+Locate
+####################
+locate pattern;lists file that match pattern
+locate is faster than find command,as locate command looks at index.
+#locate example.txt
+
+Displaying content of the file:
+###########################################
+cat
+more
+less;more features than more command
+head
+tail
+#tail -n file_name
+#tail -15 example.txt
+#tail -f file; to go through thre file as it is being written in the file such as log files
+
+Nano Editor:
+##########################################
+#nano example.txt
+
+Vi Editor:
+############################################
+Vi Modes:
+Command mode:Esc
+Insert mode: i or a or A
+Line mode: :
+
+#vi example.txt
+#vim;same as vi but with more features
+#u; Undo command
+#Ctrl-R;Redo command
+
+In command mode:
+#x;to delete a character
+#dw;to delete a word
+#dd;to delete a line
+#cc;to change a entire line
+#(line mode): set nu;setting line number
+#:10;cursor will go to line number 10
+#vimtutor;vi tutor
+
+Graphical Editors:
+###################################
+gedit;very much similar to notepad.Default text editor for Gnome.
+gvim;graphical version of vim.
+AbiWord;alternative of Microsoft Word.
+
+Remove Files:
+#############################
+rm file_name
+rm -r dir_name;recursive remove the directory and its content.
+rm -f file_name; forcefully remove file
+
+
+Copy Files:
+###############################
+cp -i;interactive copy
+cp -r;recursive copy 
+#mkdir dir
+#cp file1 file2 dir
+to copy directory need to use -r command
+#cp -r dir dir1
+
+Move/Rename Files:
+####################################
+#mv -i example.txt /home/dir/
+Rename:
+#mv file1 file2
+
+Sort Data:
+######################################
+sort file_name
+#sort example.txt
+#sort -u example.txt;unique data in the text file
+sort -r;it will reverse the order
+#sort -u -k2 example.txt;k stands for key and 2 means column number 2
+
+Creating a collection of files:
+##########################################
+tar options:
+c;create a tar archive
+x;extract files from archive
+t;display the table of content(lsit)
+v;be verbose
+z;use compression
+f file;use this file
+#tar cf example.tar example.txt
+#tar tf example.tar 
+#cd /tmp
+#tar xf /home/cloudera/example.tar
+#ls -ltr
+#tar zcf example.tar.gz example.txt
+#tar ztvf example.tar.gz;to list compressed tar file
+
+File Compression:
+#############################################
+gzip;compress files
+gunzip;uncompress files
+gzcat;concatenates compressed files
+zcat;concatenates compressed files
+
+Disk Usage:
+############################################
+du -k;diplay size in kilobytes
+du -h;display size in human readable format
+
+Escape Character:
+############################################
+Suppose file name is cloudera?
+In order to find this file we can use escape character.
+#*\?
+#ls ?;will display one-character file/dir
+#ls ??;will display two-chararcter file/dir
+#rm ??;will remove all two-character file/dir
+
+Input/Output Types:
+##########################################
+Standard input;stdin,file descriptor 0
+Standard output;stdout,file descriptor 1
+Standard error;stderr,file descriptor 2
+
+Redirection:
+##########################################
+>;redirects standard output to a file
+>>;appends to any existing contents
+<;redirects input from a file to a command
+>/dev/null;redirect output to nowhere.
+#ls -l > file.txt
+#ls >> file.txt;it will append
+#sort < file.txt
+#sort < file.txt > sorted_file.txt
+#ls new_file 2> error_file.err;it will direct error output to the file
+#ls new_file 2> error_file.er 1>out.txt
+
+Comparing Files:
+#############################################
+diff file1 file2;compare two files
+sdiff file1 file2;side by side comparison
+vimdiff file1 file2;Highlight differences in vim
+diff file1 file2
+3c3;line-num-1-Action-line-num-2
+Action=Add,Change,Delete
+#cat -n example.txt;will display line numbers
+#echo new line >>example.txt;append text to the file.
+
+Search Files:
+##########################################
+grep pattern file
+grep -i,ignores case
+grep -c;count the number of occurances in a file
+grep -n;output with line numbers
+grep -v;invert match
+#grep OK example.txt
+#grep O example.txt
+
+file Command:
+file file_name display the file type
+
+Strings Command:
+strings display printable strings in binary files
+
+Cut Command:
+cut selected portion of the file.
+cut -d;delimiter as the field separator
+cut -f;display the Nth field
+
+Pipe:
+command-output | command input
+
+Example:
+######################################
+#grep bob /etc/passwd
+#grep bob /etc/passwd | cut -d: -f1,5
+#grep bob /etc/passwd | cut -d: -f1,5 | sort
+#grep bob /etc/passwd | cut -d: -f1,5 | sort | tr ":" " ";tr is used for tranlate from ":" to " "
+#grep bob /etc/passwd | cut -d: -f1,5 | sort | tr ":" " " | column -t;it will show output in tabular format
+#cat /etc/passwd | less
+
+Transfer and copy files over the network:
+################################################
+scp;secure copy
+sftp;sewcure file transer protocol
+#sftp quickstart.cloudera(host_name)
+#lpwd;will display local directory
+#lls;will display local file
+#put example.txt;it will put file from local directory to remote directory
+#quit;exit ftom sftp client
+#scp example.txt quickstart.cloudera:/tmp/;secure copy to the /tmp directory of cloudera.
+#scp example.txt quickstart.cloudera:~/;secure copy to home directory
+#ssh cloudera
+#scp example.txt root@quickstart.cloudera:/home/root/
+#sftp root@quickstart.cloudera
+
+Customizing Shell Prompt:
+##############################
+Use an environment variable to customize.
+Bash,ksh, and sh use $PS1.
+./bash_profile;is a personal initialization file.
+echo $PS1;enviromental variable for bash prompt.
+#echo 'export PS1="[\u@\h \w]\$"' >> ~/.bash_profile
+#echo $PS1
+#PS1="\u@\h \$";it will show username and hostname in the prompt shell.
+#PS1="<\t \u@\h \w>\$"
+#cd /var/log
+#PS1="\d \t \h \W>\$ ";\t;shows current time
+
+To make permanent change: 
+#vi .bash_profile
+   (#My custom prompt
+    export PS1="[persist \u@\h \w]\$")
+
+To make multi-line prompt:
+PS1="\t\n[\h \w]\$ "
+
+Aliases:
+#############################################
+alias [name[=value]]
+#alias cls='clear'
+#unalias name;remove 'named' alias
+#unalias -a;remove all aliases
+
+To make permanent change:need to update .bash_profile.
+
+#alias ll='ls -l'
+#alias;will list alias command
+
+Processes and Job Control:
+###################################################
+#ps, display process status
+#ps -e,everything
+#ps -f,full format listing
+#ps -u username,display username's processes
+#ps -p pid;display information for PID
+
+shell process is bash process.
+
+#ps -ef | less
+#ps -fu root
+#ps -ef --forest
+#pstree
+#top
+#htop
+
+Background and Foreground Processes:
+command &;start command in background
+Ctrl-c;kill the foreground process
+Ctrl-z;suspend the foreground process
+bg [%num];background a suspended process
+fg [%num];foreground a background process
+kill;kill a process by job number or PID
+jobs;list jobs
+
+Killing Processes:
+Ctrl-c;kills foreground process
+kill [-sig] pid;send a signal to a process
+kill -l;display a list of signals
+
+Here,-sig is used to terminate a process and default termination number is 15 or TERM and kill signal number is 9.
+#kill 123
+#kill -15 123
+#kill -TERM 123
+#kill -9 123
+
+Starting a background process:
+#./long-running-program &;it will display job number and PID.
+#ps -p PID_number
+#jobs
+#jobs %1
+#fg;to transfer this background program to the foreground program.
+#Ctlr-c to kill the foreground program
+#jobs
+#fg %2;to transfer job number-2 to the foreground
+#Ctrl-z,to stop the fg process
+#bg %1
+#kill %1
+#kill -l;will show list of signals that we can send it to the process.
+#kill -9
+#kill -kill
+
+Scheduling Repeated Jobs using Cron:
+#################################################
+cron,a time based job scheduling service
+crontab,a program to create,read,update and delete job schedules
+Cron is used to schedule and automate tasks
+
+Crontab Entry:
+Minute(0-59),Hour(0-23),Day of the month(1-31),Month of the year(1-12),Day of the week(0-6)
+* is used for any.
+
+For example,Run every Monday at 07:00.
+0 7 * * 1 /opt/sales/bin/example.txt
+
+Send output to a log file.
+0 2 * * * /root/backupdb > /tmp/db.log 2>&1
+
+Run every 30 minutes.
+0,30 * * * *
+
+Run for first 5 minutes of the hour.
+0  -4 * * * *
+
+Crontab Command:
+crontab file;install a new crontab from file.
+crontab -l;list cron jobs.
+crontab -e;edit cron jobs.
+crontab -r;remove cron jobs.
+
+#vi cron-job
+(# Run every Monday at 07:00
+0 7 * * 1 /opt/sales/bim/weekly-report)
+
+#crontab cron-job
+#crontab -l
+#echo $EDITOR
+#EDITOR=vi
+#crontab -e
+#crontab -r
+#crontab -l
+
+Switch Users:
+#####################################################
+su [username];Change user ID or become superuser
+whoami;displays the effective username
+
+Setting environment variable:
+#export TEST=1
+#echo $TEST
+#su root;swtiched to root user
+#su - root;switched to root environment
+#su -c 'echo $ROOT_HOME' - root
+
+sudo;execute a command as another user,typically superuser.
+
+sudo -l;list available commands.
+sudo command;run command as root
+sudo -u root command;run command as root
+sudo -u user command;run command as user
+sudo su;switch to superuser account
+sudo su -,switch to the superuser account with root's environment
+sudo su - username;switch to the username account
+sudo -s;start a shell with root account.
+sudo -u root -s
+sudo -u user -s,start shell as user
+
+
+#sudo /etc/init.d/oracle start;to start a application named as oracle as sudo user.
+#sudo -u bob /opt.bobapp/bin/start
+#sudo su - root
+#sudo -s
+#sudo su -;switch root user's account and environment
+
+Changing sudo configuration:
+visudo;edit the /etc/sudoers file
+
+
+Shell History and Autocompletion:
+##########################################################
+~/.bash_history
+~/.history
+~/.histfile
+history;display shell history
+histsize,size of the history
+export histsize=1000
+!N;command to run history commnad number-3
+!string,will execute most recent history command with that string.
+#head files.txt sorted_files.txt
+#vi !:2;to edit sorted_files.txt
+#echo example.txt
+#ls -ld ~;will show home directory
+
+Installing and Managing Software:
+########################################################
+Package: a collection of files.
+RPM:Redhat Package Manager
+
+yum search string;Search for string
+yum info [package];display info
+yum intall [-y] package;install package
+yum remove package;remove package
+rpm -e package;erase package
+#yum search telnet
+#su -;switch to root user
+#cd /home/cloudera/Downloads
+#ls
+#rpm -ivh file_name ;i for install,v for verbose,h for hash mark
+#rpm -qa | less;query all packages installed in the system
+#rpm -qa | sort | less
+#which which;to check 'which' command belongs to which package
+#rpm -qf /usr/bin/which
+#rpm -rl which
+
+Connnecting to a Virtual machine over the network:
+###########################################################
+sshd listens for connections from clients. Basically it is a ssh server process.
+
+Daemon process is a long-running background process that answers requests for services.
+
+#ps -ef|grep sshd
+#rpm -qa | grep ssh-server
+#sudo yum install -y openssh-server openssh-client
+#sudo service sshd start
+#ifconfig -a
+#whoami;shows username
+#ssh adminuser@X.X.X.X 
+#putty;if putty is installed in the linux system

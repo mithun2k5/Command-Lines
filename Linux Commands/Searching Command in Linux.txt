@@ -1,0 +1,33 @@
+**Learning souce:ITversity YouTube Channel
+
+Basic Linux Command:
+####################################
+Commnad Searching in Linux:
+#####################################
+history
+history|grep  (searching pattern)ls -ltr
+history|grep ps (to check process history command)
+
+ctrl + r to search for command
+ctrl + c to quit
+
+set -o vi (to set the command prompt as vi editor )
+
+press j; will show next command
+press k; will show previous command
+press esc;  to preview escape mode
+in esc mode, write / and desired command to search for a particular line. and press n to check next command and/or press shift+n to check previous command again.
+
+sudo init (for shutting down or rebooting purpose)
+
+ls -altr|grep -i profile 
+or 
+ls -altr|grep -i rc
+
+cat etc/passwd|grep 'whoami' (to check password for the current user)
+
+whoami; to check the current user.
+
+vi .bashrc and write set -o vi.
+ 
+

@@ -1,0 +1,39 @@
+**Learning source:ITversity-YouTube Channel
+
+Secure and passwordless login to the remote host:
+#################################################
+
+#ifconfig -a
+
+To login on remote host
+#ssh root@X.X.X.X (IP_ADDRESS)
+
+ssh-keygen;It will generate public and private key
+
+#ls -altr|grep ssh
+
+#cd .ssh
+
+Public key-file of one host need to be copied to the key-file of other hosts to login on the passwordless ssh.
+
+scp is a command line tool to copy or transfer files across hosts. It uses the same kind of security mechanism like the ssh program.
+
+~; home directory
+
+#cd .ssh
+#scp id_rsa.pub root(username)@X.X.X.X(hostname):~
+or
+#scp id_rsa.pub root(username)@X.X.X.X(hostname):/root
+
+
+On remote host, need to create ssh directory:
+#############################################
+#mkdir .ssh
+chmod should be 700 rather than 755
+#chmod 700 .ssh
+>>;is used to append or add data into the existing/new files.
+cat id_rsa.pub >> .ssh/authorized_keys
+
+After that, an user can login to the remote host using ssh command without using password.
+
+#scp -r .ssh root@192.168.225.40:~;r is used fo recursive
