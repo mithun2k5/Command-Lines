@@ -1,0 +1,289 @@
+
+Common Command for Cisco Device:
+
+##################################################
+
+Show Command:
+##################################################
+Show ip interface brief
+Terminal monitor
+Show mac-address table
+Show run int fa0/1
+Show port security interface fa0/1
+Show interface
+Show ip route
+Show clock
+Show ipdhcp binding
+show run | include ip route
+show ip nat translations
+show controllers s0/1/0
+show cdp neighbors
+show cdp entry
+show users
+show session
+show version
+show flash
+show interface description
+show cdp neighbors/detail
+show interfaces
+show ip protocols
+show vtp status
+show vlan
+show int fa0/1 swtichport
+show interface trunk
+show spanning tree
+show logging
+show ip ospf neighbor
+show ip route
+show ip eigrp neighbor
+show access lists 70
+show run|include access lists 70
+show ip access list
+show ip nat translations
+show run interface s0/0/0
+debug ppp authentication
+show frame relay map
+show frame relay lmi
+show frame relay pvc
+
+For SSH:
+################################################################
+Username mitun password cisco
+ip domain-name
+crypto key generate rsa
+ip ssh version 2
+line vty 0 4 
+transport input ssh
+
+Switchport Security
+Int fa0/1
+Switchport mode access
+Switchport port-security maximum 1
+Swtichport port-security violation shutdown/protect/restrict
+Swtichportport-security mac-address sticky
+
+Speed assignment to Switch:
+################################################################
+Int fa0/1
+Duplex half/full
+Speed 10
+Additional on VTY/Console port:
+Line console 0/line vty 0 4
+Logging synchronous
+Exec timeout 30 0
+No ip-domain lookup
+Alias exec s show ip interface brief 
+
+Interface name:
+###############################################################
+Int fa0/1
+Description cisco_device
+Http Server: (Optional command)
+Ip http secure-server
+Username mitun privilege 15 secret cisco
+Ip http authentication local
+Line vty 0 4 
+Login local
+
+DHCP configuration:
+################################################################
+Ipdhcp pool dhcp_pool1
+Network 192.168.1.0 255.255.255.0
+Domain-name dhcp_1
+Dns server 4.2.2.2
+Default router 192.168.1.1
+Ipdhcp excluded address 192.168.1.1 192.168.1.19
+
+Static Routing: 
+################################################################
+Ip route destination network subnet mask next hop ip
+Ip route 0.0.0.0(any ip) 0.0.0.0(any subnet mask) destination address [default routing]
+
+DNS Configuration: 
+#######################################################################################
+Ip name-server 4.2.2.2
+Ping www.google.com
+RIP Configuration:
+router rip
+version 2
+network 192.168.1.0
+no auto-summary
+
+DTE/DCE Setting:
+######################################################################################
+int s0/1/0
+clock rate 2000000
+CDP:
+inf fa0/4
+no cdp enable
+no cdp run
+
+Copy/Erase File:
+######################################################################################
+copy running config start-up config
+copy running config tftp 192.168.1.0 r2-config.txt
+copy flash tftp
+copy tftp flash
+copy tftp startup(not recommended)
+boot system tftp://192.168.2.1/ (for updating flash)
+erase NVRAM
+erase startup-config
+IP address assignment in interface: 
+int fa0/1
+ip address 192.168.1.1 255.255.255.248
+no shut down
+no keep alive
+int range fa0/0-20
+switchport access vlan 50
+
+Trunk-line creation: 
+#####################################################################################
+int fa0/1
+switchport mode trunk
+switchport trunk encapsulation dot1q
+
+VTP Creation: 
+###################################################################################
+vtp domain CISCO
+vtp password
+vtp mode
+
+VLAN Creation:
+##################################################################################
+vlan 10
+name SALES
+int vlan 20
+ip address 192.168.20.1 255.255.255.0
+no shutdown
+
+Subinterface creation:
+##############################################################
+int fa0/1.20
+encapsulation dot1q 20
+ip address 192.168.20.1 255.255.255.0
+Spanning Tree Creation: 
+spanning tree mode rapid-fast
+spanning tree vlan 1 root primary
+spanning tree vlan 1 priority 4096
+spanning tree vlan 1,20,,30 root primary
+int fa0/1
+spanning tree portfast
+spanning tree bpdu-filter(dangerous)
+
+Buffering:
+#################################################################
+logging buffered 64000
+
+Routing Protocol-OSPF:
+################################################################
+router ospf 1
+router id 3.3.3.3
+network 192.168.1.1. 0.0.0.255 area 0
+area 1 range 172.30.0.0 255.255.248.0
+default-information originate
+clear ip ospf process(privilege mode)
+debug ip ospf adj
+
+Routing Protocol-EIGRP:
+#################################################################
+router eigrp 10
+no auto summary
+network 192.168.1.0 0.0.0.255
+
+Standard Access Control List: 
+###################################################################
+access-list 1 deny/permit 192.168.5.10 0.0.0.0
+access-list 1 deny host
+access-list 1 permit 192.168.5.0 0.0.0.255
+
+int s0/0
+ip access-group in
+access-list 10 permit 0.0.0.0 255.255.255.255(permit any)
+access-list 70 remark Hello
+acess list 10 permit any 
+
+line vty 0 4
+ip access class 70 in
+
+Extended Access Control list:
+#############################################################################################
+access list 150 deny ip 192.168.10.50 0.0.0.0(source ip) 192.168.3.50 0.0.0.0(destination ip)
+access list 150 deny tcp 192.168.10.50 0.0.0.0 eq 80(source port)
+access list 150 deny tcp 192.168.10.50 0.0.0.0 any eq 80(destination port)
+access list 100 deny ip host 192.168.10.50 192.168.2.0 0.0.0.255
+access list 100 permit ip any any 
+int fa0/0.10
+ip access-group 100 in
+
+Another command line for Extended Control List:
+##############################################################################################
+ip access list extended DENY HOSTA
+permit tcp host 192.168.10.50 host 4.2.2.2
+20(sequence number) permit tcp host 192.168.10.50 host 4.2.2.4
+ip access list extended 100
+no 20(sequence number)
+
+Reflexive(Established) Access Control List:
+##############################################################################################
+ip access list extended FILTER
+permit tcp any any established 
+int e0/1
+ip access-group FILTER in
+
+Network Address Translator(NAT):
+###############################################################################################
+int e0/0
+ip nat inside
+exit
+int e0/1
+ip nat outside
+exit
+ip access list standard NAT_ADDRESS
+deny 192.168.3.0 0.0.0.255
+ip nat inside source list NAT_ADDRESS int e0/1 overload
+
+Static NAT:
+########################################################################
+ip nat inside source static 192.168.10.50 68.110.117.99
+ip nat inside source static 80 192.168.10.50 80 int e0/1 80
+
+Dynamic NAT:
+########################################################################
+ip nat pool public-addresses 68.110.171.99 68.110.171.100 255.255.255.0
+ip nat inside source list NAT_ADDRESS pool public addresses overload
+
+WAN-HDLC:
+#########################################################################
+int s0/0
+encapsulation hdlc
+
+WAN-PPP:
+#######################################################################
+int s0/0
+encapsulation ppp
+ppp authentication chap
+username R2 password cisco (password should be same at both end)
+
+Frame Relay:
+#####################################################################
+
+Multipoint frame relay Configuration:
+#####################################################################
+int s0/0/1
+encapsulation frame relay
+frame relay lmi-type
+frame relay map ip add 192.168.1.2(remote ip address) 102 (local dlci) broadcast
+
+Point-to -point frame relay Configuration:
+###################################################################################
+int  s0/0/0
+encapsulation frame relay
+int s0/0/0.102 point-to -point
+ip address 192.168.1.1 255.255.255.0
+frame-relay interface-dlci 102(local dlci)
+exit
+####################################################################################
+
+
+
+
