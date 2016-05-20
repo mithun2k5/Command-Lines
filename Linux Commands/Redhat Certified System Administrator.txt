@@ -1,0 +1,139 @@
+**Learning source:YouTube Channel-ITversity
+Standard Streams:Standard In,Out and Error:
+#########################################################
+To print in standard out:
+#echo "Hello World"
+# ls -ltr /etc/passwd
+#cat /etc/passwd
+#echo "Hello world,this is to test redirection" > testing,
+the output of the echo command will not show on the terminal,it will
+redirect to the file "testing".
+#history
+#echo "Hello world,this is to test redirection" >> testing,it will
+append lines to the existing file.
+# cat /etc/passwd >> testing
+
+Pipe(|) is used to pass output from one command to another command
+
+Grep: Globally search a regular expression and print
+#ls -ltr|grep "o",to search in the output of the ls-ltr command
+#grep "o" /etc/passwd
+
+In linux,standard stream: standard in is represented by 0,standard out is represented by
+1 and standard error is represented by 2.
+
+#cat /etc/passwd > testing
+#sort testing 1> testing_sorted 2> testing_failed,means it will redirect the output to the
+testing_sorted file and if it has error,it will redirect to the testing_failed file.
+#sort testing01 1>testing_sorted 2>testing_failed
+#cat testing_failed,it will show the error output
+
+Access Remote systems using ssh:
+#############################################################
+Daemon process is a software process.
+To connect to the remote server,ssh client need to be installed in source.
+sshd process need to run on the targert server.
+To check ssh is running or not.
+#ssh
+#ssh root@X.X.X.X
+#ifconfig -a
+To check sshd is running or not.
+#ps -ef|grep sshd
+#ssh root@X.X.X.X
+#exit
+
+Passwordless login:
+#ls -a,it will show hidden files.
+#ls -altr|grep .ssh
+#ssh-keygen
+#cd .ssh
+The public keyfile of the source need to copy to the authorized_keys folder
+of the target server.
+#scp ~/.sshd/id_rsa.pub root@X.X.X.X:~,~ is home directory
+#cat id_rsa.pub >> ~/.ssh/authorizeed_keys
+#ssh root@X.X.X.X
+Need to change mode of the authorized_keys files.
+#chmod 600 authorized_keys
+to check it is working or not in localhost:
+#cat id_rsa.pub >> authorized_keys
+#ssh root@localhost,it will connect without asking for password, it will
+also ensure that sshd is running localhost/source also.
+
+Log in and switch users in multiuser targets:
+####################################################
+#view /etc/passwd,to check users
+#cat /etc/passwd|grep -v nologin
+#su - mithun
+#su - root
+#ps -ef|grep su
+#ps -fu
+#ps -ef
+
+Archive,Compress,unpack,uncompress files using tar,star,gzip and bzip2
+############################################################################
+Archive means pack,for backup purposes.
+Archive and unpack will be done by tar and star
+Compress and uncmpress will be done by gzip abd bzip2
+#tar,to check command in there or not
+#sudo yum -y intall star
+#tar --help
+#tar --usage
+File which is archived and ziped is named as mithun.tar.gz
+To inzip this file:
+#tar xzf mithun.tar.gz,x for extract and z for unzip
+#du -sh .,du for disk usage,s for summary and h for human readability
+#cd ..,to go one directory up
+#tar --help
+#tar -c,-c to create,-v for verbose,-f for file archive
+#tar cvf mithun.tar(will create file in that directory with this filename) mithun/(the directory,which needs to be archived) 
+#du -sh mithun.tar
+#tar -tf mithun.tar,to check each of the files in the tar
+#tar xf mithun.tar
+
+star:secure tar,concern on security
+#star -help
+#star -c -f mithun.tar mithun/
+#star -t -f mithun.tar
+#star -x -v -f mithun.tar
+#scp -r mithun root@X.X.X.X:/root/
+#ls -ltr|wc -l,wc stands for wordcount and -l is used to mention each line will be counted as word.
+wc -l means line count
+#gzip -h
+#gzip mithun.txt,it will compress the file with gz extension.
+#cp mithun01.txt mithun.txt,to copy/create mithun.txt file using mithun01
+#gzip -f mithun.txt,it will force to create zip file.
+#gzip -l mithun.txt,it will list
+#gzip -d mithun.txt.gz, it will decompress
+#gunzip mithun.txt.gz,same as above command
+
+bzip2 compress file at higher rate as compared to gzip
+#bzip2,another compression command
+#bzip2 --help
+#bzip2 mithun.txt
+#bzip2 -d mithun.txt.bz2
+#bzip2 -k mithun.txt,-k is used for create,in that case both mithun.txt and newly created mithun.txt.bz2 file will be there in that directory
+Generally,after compression,the original file mithun.txt will be deleted automatically.
+
+Creating both tar and zip file at a time:
+#tar -cvzf mithun.tar.gz mithun/
+#du -sh mithun.tar.gz
+#star -help
+#star -bz -c -f mithun.star.bz mithun/,-bz is used for bzip2
+#star -z -c -v -f mithun.star.bz mithun/
+#tar -xzvf mithun.tar.gz
+#star -x -z -v -f mithun.star.bz
+
+#Create and Edit Text Files:
+###############################################################
+vim is more advanced than vi,vim can understand standard keyboard.
+#cp /usr/share/doc/man-pages-overrides-7.2.4/wget/COPYING text_demo.txt
+#gedit text_demo.txt,it will open graphical interface
+#vi text_demo.txt
+#touch mithun.txt,it will create an empty file,if file already exists,it will update the timestamp.
+
+
+
+
+
+
+

@@ -1,5 +1,7 @@
 **Learning Source: www.udemy.com
 
+CIDR- Classless Inter-Domain Routing
+
 Finding IP address in linux system:
 #####################################
 
@@ -8,34 +10,86 @@ Finding IP address in linux system:
 
 Finding hostname in linux system:
 #########################################
+hostname is a human-readable name for an IP address.
 1) hostname or
-2) hostname -f or
+2) hostname -f,it will show FQDN
 3) uname -n
 
+DNS hostnames:
+################################################
+FQDN = Fully qualified domain name
+webprod01.mycompany.com
+
+TLD: Top level domain : .com,.net,.org, etc.
+
+Domains: to the left of TLD
+
+sub-domain: to the left of the domain
+webprod01.ny.us.mycompany.com
 
 Configuring hostname:(For Redhat/Ubuntu/CentOS)
 ####################################
+Earlier version of distribution
 1) vi /etc/sysconfig/network
 HOSTNAME=router01
 or
 2)hostname router01
-3)echo 'router01' > /etc/hostname
+
+3)echo 'router01' > /etc/hostname (for Ubuntu/Redhat)
 
 Resolving DNS name:
 ####################################
 1) host
 2) dig
+#host www.mycompany.com
+#host 1.2.1.6
+
+
+The /etc/hosts file:
+#######################################################
+This file is local to linux system. It does not propagate to the rest of the network.
+This file contains IP address and host name.
+Format:
+10.11.12.13 webprod02.mycorp.com webprod02
+The /etc/hosts file will check first before DNS system is queried.
+
+The /etc/nsswitch.conf:
+##########################################################
+NSS=Name Service Switch
+Controls the search order for resolutions
+
+hosts: files dns or
+hosts: files nis dns
+
+Network Ports:
+########################################
+When a service starts it binds itself to a port.
+Port 1-1023 are well-known prots.
+22-SSH
+23-Telnet
+21-FTP
+25-SMTP
+143-IMAP,is a TCP/Ip protocol used for mail delivery
+IMAP-Internet Message Access Protocol
+389-LDAP
+443-HTTPS
+
+The /etc/services:
+##################################################
+Maps port names to port numbers
+ssh 22/tcp ##ssh Remote Login Protocol
+smtp 25/tcp #SMTP
 
 Configuring DHCP clients:
 ######################################
+DHCP:Dynamic Host Configuration Protocol, it assigns IP address to DHCP clients.
+It assigns:
+IP address
+netmask
+gateway
+DNS servers
 
-Ubuntu: 
-#############
-/etc/network/interfaces
-auto etho
-iface etho inet dhcp
-
-RedHat:
+RedHat:(RHEL:Redhat Enterprise Linux)
 ###############
 /etc/sysconfig/network-scripts/ifcfg-DEVICE
 /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -55,15 +109,6 @@ BROADCAST=X.X.X.X
 GATEWAY=X.X.X.X
 ONBOOT=yes
 
-Ubuntu: 
-#############
-/etc/network/interfaces
-auto eth0
-iface eth0 inet static
-address=X.X.X.X
-netmask=X.X.X.X
-gateway=X.X.X.X
-
 Manually assigning an IP address:
 ###########################################
 ip address add X.X.X.X/subnet mask dev eth0
@@ -75,3 +120,74 @@ ifconfig eth0 up
 Interface shut-down/up:
 #########################################
 ifup eth0 or ifdown eth0
+
+Network Troubleshooting:
+###############################################
+1.ping
+2.traceroute/tracepath
+3.netstat
+4.tcpdump
+5.telnet
+
+Ping:
+#####################
+ping host
+ping -c COUNT host
+#ping -c 3 www.google.com
+
+Traceroute:
+#####################################
+Gives infomration about the route it takes. It requires root privilege.
+By default it trys to resolve IP address into DNS names.
+#traceroute -n www.google.com, here -n is used to show IP address instead of DNS names.
+It sends 3 packet along each hop
+
+Tracepath:
+#####################################
+It does not require root privilege.
+#tracepath -n www.google.com
+It produces one line of output for each response each receives,whereas
+taraceroute produce one line of output for each hop
+
+Netstat:
+############################################
+This command is used to collect wide variety of network information.
+-n, display numerical addresses and ports
+-i,displays a list of network interfaces.
+-r,displays the route table
+-p,display the PID and program used,it requires root privilege
+-I,display the listening sockets
+-t,limit the output to TCP
+-u,limit the output to UDP
+
+#netstat -i
+#netstat -rn
+#sudo netstat -ntlp
+
+Packet sniffing with tcpdump:
+#######################################################
+tcpdump is used to examine the contents of network traffic such as payload to check if it 
+is actually being delivered or not.
+
+-n,display numerical addresses and ports
+-A,display ASCII(text) output
+-v Verbose mode.Produce more output
+-vvv Even more verbose output
+
+#sudo tcpdump -Anvvv
+
+Telnet:
+########################################################
+telnet host_or_IP port_number
+#telnet www.google.com 80
+HTTP protocol accepts human-readable commands.
+to get a homepage:Type
+GET /
+Response from server:
+HTTP/1.0 200 OK
+to cancel connection,type:
+^](means press ctrl key and press closing bracket)
+to exit telnet,type quit
+Connection refused message means connection is blocked by firewall
+Request time-out message means traffic is geeting down before reaching 
+to the port or that port is not open on the host.

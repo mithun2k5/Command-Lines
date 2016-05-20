@@ -1,0 +1,659 @@
+LINUX Boot Process:
+#############################################
+BIOS: 
+Basic Input/Output system
+Special firmware
+performs POST...Power-On self test
+Primary purpose: find and execute the boat loader.
+
+Linux Kernel:
+It is named as vmlinux or vmlinuz if it is compressed.
+
+Boot Loader:
+LILO:Linux loader
+GRUB: Grand Unified Bootloader
+It starts the operating system
+
+Initrd:
+Initial RAM Disk
+Temporary filesystem that is loaded from disk and stored in memory
+Contains helper and modules required to load the permanent OS file system.
+
+The /boot directory:
+###############################################
+/boot:
+contains the files required to boot linux.
+initrd
+kernel
+boot loader configuration
+
+#ls -F /boot
+# cd /boot
+
+
+Kernel Ring Buffer:
+##############################################
+It is a data structure that is always the same size.
+Contains messages from the linux kernel.
+#dmseg
+#dmseg -T | less
+#cat /var/log/dmseg
+#/etc/systemd/system/default.target
+
+Runlevels/ Description:
+##############################################
+Linux uses runlevels to identify which services and processes need to start.
+0 shuts down the system
+1 S,s Single user mode,used for maintenance
+2 multiuser mode with graphical interface (Debian/Ubuntu)
+3 Multi-user text mode (Redhat/CentOS)
+4 Undefined
+5 Multi-user mode with graphical interface (Redhat/CentOS)
+6 Reboot
+
+Init:
+##################################################
+Runlevel configuration is controlled by init program.
+/etc/inittabb:
+id:3:initdefault: here runlevel 3 is a default runlevel.
+
+An alternative of init is Systemd:
+#######################################################
+uses targets instead of runlevels.
+
+#cd /lib/systemd/system
+#ls -l runlevel5.target
+#systemctl set-default graphical.target (it will show soft link to the main target)
+#systemctl get-default
+
+Changing runlevels or targets
+telinit runlevel
+#telinit 5
+#systemctl isolate graphical.target (it will change the target)
+
+Reboot:
+#telinit 6
+#systemctl isolate reboot.target
+#reboot
+
+rebooting using shutdown command
+#shutdown -r 15:30(hh:mm) "rebooting!"
+#shutdown -r +5 "rebooting soon!!",here +n is the number to mention wait before performing the action.
+#shutdown -r now
+
+PowerOff:
+#telinit 0
+#systemctl isolate poweroff.target
+#poweroff
+
+System Logging
+####################################################
+It helps in the processing of messages
+Allows logging to be centrally controlled
+Usees facilities and severities to categorize messages.
+
+Facility is used to indicate from which application or process the message originated from.
+For example,
+facilitu number=0,keyword=kern indicates this message is originated from linux kernel.
+
+Severity:
+code Name
+0    Emergency
+1    Alert
+2    Critical
+3    Error
+4    Warning
+5    Notice
+6    Info
+7    Debug 	
+
+Daemon: is along-running background process that answers requests for services.
+
+Syslog Server:
+Process syslog messages based on rules
+syslogd
+rsyslog
+syslog-ng
+
+rsyslog:
+/etc/rsyslog.conf
+#IncludeConfig /etc/rsyslog.d/*.conf (it will include configuration that is located in /etc/rsyslog.d into /etc/rsyslog.conf)
+
+
+Logging Rules:
+Consists of two field:
+1. Selector field: Facility.severity
+2. Action field: Determines how a message is processed.
+
+Example:
+mail.* /var/log/mail.log (it will store all messages from mail of any severity and send it to mentioned location)
+
+Caching operation:
+mail.info -/var/log/mail.info, hyphen(-) is used for cachingk,which has improved I/) performance.
+
+Example Logging Rules:
+*.info;mail.none;authpriv.none;cron.none /var/log/messages;here .none means do'nt match that means no messages will go to the mentioned link
+
+Logger:
+It is used to generate syslog messages.
+logger [options] message
+options:
+-p facility.severity
+-f tag
+If -p is not used,default will be used as user.notice
+#logger -p mail.info -t mailtest "Test."
+#sudo tail -1 /var/log/mail.log
+
+logrotate:
+/etc/logrotate.conf
+It is used to rotate,compress,remove or email log files. It helps to automate rotate of log files to prevent fill-up storage spaces of log messages.
+#include /etc/logrotate.d (include is a directive)
+
+Example logrotate.conf:
+weekly
+rotate 4;log rotates and keep logs of 4 weeks
+create
+compressed
+include /etc/logrotate.d
+#/etc/logrotate.d/rsyslog/
+
+Test the logrotate configuration:
+#logrotate -fv /etc/logrotate.conf, -f is used for force and -v is used for verbose logging.
+
+Shell Scripting:
+#################################################
+Scripts:
+Contain a series of commands.
+An interpreter executes commands in the script.
+Great for automating tasks.
+
+Script.sh
+
+#!/bin/bash;this is bash shell program as an interpretor
+echo "Scripting is fun!"
+
+#chmod 755 script.sh
+#./script.sh,it will show Scripting is fun!
+
+Other shell program as interpretors are:
+#!/bin/csh
+#!/bin/ksh
+#!/bin/zsh
+
+sleepy.sh
+#!/bin/bash
+sleep 90
+
+#./sleepy.sh & 
+#ps -fp 16796
+
+The interpretor execute the script
+
+#ps -ef |grep 16804 | grep -v grep
+
+Python can be used as an interpretor for the script as well.
+
+hi.py
+#!/usr/bin/python
+print "This is a python script."
+
+#chmod 755 hi.py
+#./hi.py
+
+Varibles:
+Storage location that have a nane.
+Name-value pairs
+By convention,variables are uppercase.
+
+Variable Usage:
+#!/bin/bash
+MY_SHELL="bash"
+echo "i like the $MY_SHELL shell."
+echo "i like the ${MY_SHELL}ing shell."
+
+Assign command output to the variable:
+######################################################
+#!/bin/bash
+SERVER_NAME=$(hostname),here hostname is a command
+echo "You are running this script on ${SERVER_NAME}."
+
+Tests:
+########################
+[condition-to-test-for]
+Example:
+[-e /etc/passwd],this command test if this file exists or not,if exists
+it will return True or 0,if does not exist,it will return False or 1.
+
+type help test or man test,to check the various test that can be performed.
+
+File operators(tests):
+#################################
+-d FILE,true if file is a directory
+-e FILE,true if file exists
+-f FILE,true if file exists and a regular file
+-r FILE,true if file is readable by you
+-s FILE,true if file exists and is not empty
+-w FILE,true if the file is writable by you
+-x FILE,true if the file is executable by you
+-z STRING,true if string is empty
+-n STRING,true if string is not empty
+STRING = STRING,true if the strings are equal
+STRING1 != STRING2,true if the strings are not equal 
+
+Arithmetic operators(tests):
+#########################################
+arg1 -eq arg2,true or false
+arg1 -ne arg2,true or false
+arg1 -lt arg2,true or false
+arg1 -le arg2,true or false
+arg1 -gt arg2,true or false
+arg1 -ge arg2,true or false
+
+Making Decisions-The if statement
+##############################################
+if [condition-is-true]
+then
+command 1
+command 2
+fi
+
+#!/bin/bash
+MY_SHELL="bash"
+if ["$MY_SHELL" = "bash"]
+then
+echo "You seem to like the bash shell."
+fi
+
+if/else:
+#######
+if [condition-is-true]
+then
+command N
+else
+command N
+fi
+
+if/elif/else:
+#######
+if [condition-is-true]
+then
+command N
+elif [condition-is-true]
+then
+command N
+else
+command N
+fi
+
+For loop:
+###########
+to perform an action on a list of items.
+for variable_name in item_1 item_n
+do
+command 1
+command 2
+done
+
+#!/bin/bash
+for COLOR in red green blue
+do
+echo "COLOR:$COLOR"
+done
+
+#!/bin/bash
+COLORS = "red green blue"
+
+for COLOR in $COLORS
+do
+echo "COLOR: $COLOR"
+done
+
+#date +%F,here +%F,plus is used to signal to use user-defined format string
+%F means full date,same as %Y-%m-%d
+
+#./rename-pics.sh
+#!/bin/bash
+PICTURES=$(ls *jpg)
+DATE=$(date +%F)
+
+for PICTURE in $PICTURES
+do 
+echo "Renaming ${PICTURE} to ${DATE}-${PICTURE}"
+mv ${PICTURE} ${DATE}-${PICTURE}
+done
+
+Positional Parameters:
+varibales that contains the content of the command line.
+variables are $0 to $9.
+$script.sh parameter1 parameter2
+$0: "script.sh"
+$1: "parameter1"
+$2: "parameter2"
+
+#!/bin/bash
+
+echo "Executing script: $0"
+echo "Archiving user: $1"
+
+#Lock the account
+passwd -l $1
+
+#Create an archive of the home directory.
+tar cf /archives/${1}.tar.gz /home/${1}
+
+#./archive_user.sh elvis
+
+or USER = $1 #The first parameter is the user.
+
+#!/bin/bash
+echo "Executing script: $0"
+for USER in $@ # to access parameters staring from $1
+do
+echo "Archiving user:$USER"
+#Lock the account
+passwd -l $USER
+#Create an archive of the home directory
+tar cf /archives/${USER}.tar.gz /home/${USER}
+done
+
+#./archive_user.sh chet joe
+
+Accepting USer Input(STDIN):
+##############################
+The rad command accepts STDIN.
+
+read -p "PROMPT" Variable
+
+#!/bin/bash
+
+read -p "Enter a user name: " USER
+echo "Archiving user: $USER"
+
+#Lock the account
+passwd -l $USER
+
+#Create an archive of the home directory
+tar cf /archives/${USER}.tar.gz /home/${USER}
+
+#./archive_user.sh
+
+Disk Management:
+#######################################
+There can be four partitions:
+One scheme is:
+1.OS
+2.Application
+3.User
+4.Swap
+There can be two partitions:
+Another scheme is:
+1.OS
+2.User home directories
+
+#df -h
+
+MBR: Master Boot Record,is the boot sector at the beginning of storage device
+MBR has been phased out by GPT.
+GPT:GUID Partition Table,GUID:Global Unique Identifier
+MBR supports up to 4 primary partitions.
+GPT is a part of UEFI,UEFI:Unified Extensible Firmware Interface
+UEFI is replacing BIOS
+GPT supports upto 128 partitions
+
+Mount Points:
+A directory used to access the data on a partition.
+/(slash) is always a mount point
+/home/jason is on the partition mounted on /home.
+#mkdir /home/sarah
+#mount /dev/sdb2 /home
+Now, /home/srah will not be accessible.
+#umount /home
+Now, /home/sarah is accessible.
+
+fdisk utility is used to create and manipultate partitions on a disk.
+fdisk /path/to/device
+
+To create MBR partitions:
+#fdisk -l|less,to see the available list of devices.
+#fdisk /dev/sdb
+#m (for help)
+#n
+#p
+#1
+#2048
+#+1G
+#t;to change partition type
+#l,to get list of partition
+#82,represent linux swap partition
+#n
+#p
+#2
+# default(press enter)
+#+20G
+#n
+#p
+#3
+#default
+#default
+#p,to check the paritions
+#w,to write the changes.
+
+To create GPT partitions:
+#fdisk /dev/sdc
+#p
+#g,to create GPT partitions
+#n,to create new partitions
+#1
+#default
+#default
+#p
+#w
+#fdisk -l|less
+
+File Systems: Before a partition can be used by a linux system,it
+will need a file system
+ext:Extended file system,default file system for linux distribution.
+To create file system:
+mkfs -t TYPE DEVICE(a path to partition where filesystem will reside)
+#mkfs -t ext3 /dev/sdb2,sdb2 means 2nd parition of /dev/sdb2
+#man mkfs -t xfs,to find more information about creation of xfs filesystem
+
+Mouting with mount:
+#mount /dev/sdb3 /opt
+#mount, to check manual and virtual filesystem
+#df -h,to check mount point contains file system
+df stands for disk free.
+
+In order to make mounts persist between reboots,add an entry in the /etc/fstab file.
+#umount /opt
+#umount /dev/sdb3
+
+Swap is another type of filesytem
+Swap space create swap area and enable it instead of creating filesystem and mounting it.
+#mkswap /dev/sdb1,path to the partition
+#swapon /dev/sdb1,to enable swap on that path/device location
+#swapon -s, to check swap space in use
+
+Viewing Labels and UUIDs:
+#lsblk -f
+#blkid
+
+Labeling a file system:
+#e2label /dev/sdb3 opt;for ext filesystem,here opt is a label to /dev/sdb3 device
+
+
+
+
+
+/etc/fstab-The File System Table:
+controls what devices get mounted and where on boot.
+Each entry is made up of 6 fields:
+1.device
+2.mount point
+3.file system type
+4.mount options
+5.dump
+6.fsck order
+
+Managing Users and Groups:
+####################################################
+Linux is a multi-user operating system.Linux system can have multiple user account and can be used at the
+same time.
+Accounts have a :
+1.username (or login ID)
+2. UID,this is a unique number
+3.Default group
+4.Comments
+5.Shell
+6.Home directory location
+
+All these informations are stored in the etc/passwd file.
+The format of the etc/passwd:
+username:password:UID:GID:comments:home_dir:shell
+Example:
+root:x:0:0:root:/root:/bin/bash
+here x is used for password which encrypted password stored in the
+/etc/shadow file.
+#ps -fu root,here root is an username
+
+Encrypted password is stored in /etc/shadow to avoid risk,which is
+only readable by super user account/root and hence pervents user 
+trying to crack passwords.
+
+UID:
+The root account is always UID 0.
+System accounts have UIDs < 1000
+It is configuerd in /etc/login.defs
+
+GID:
+New filees belong to a user's default group listes in the /etc/passwd
+Users can switch groups by using the newgrp command before creating the files.
+
+Shell:
+A list of available shells are in /etc/shells.
+Shells can be command line application.
+To prevent interactive use of an account, use /usr/sbin/nologin or /bin/false as the shell
+
+/etc/shadow:
+username:encrypted password:number of days since Jan-1st-1970,the
+password has been changed:number of days before password can be changed:
+number of days after which password must be changed,99999 means users
+never has to change their password,number of days to warn the user that
+password will expire:number of days after password has expired that the 
+account is disabled:number of days since 1st-Jan-1970 the account has 
+disabled:9th field is used for future use.
+
+useradd:
+useradd [options] username
+-c "comments"
+-m Create home directory
+-s /shell/path The path to the user shell
+#useradd -c "Mithun Talukder" -m -s /bin/bash mithun
+ 
+Create a password using passwd:
+#passwd mithun
+
+Account Infomation for newly created account:
+#tail -1 /etc/passwd
+#tail -1 /etc/shadow
+
+Additional useradd options:
+-g group,specify the default group
+-G group1,group2,specify additional groups
+
+#useradd -c "mithun talukder" -m -s /bin/bash -g sales -G projectx mithun
+
+System or Application Accounts:
+#useradd -c "Apache Web Server User" -d /opt/apache -r -s /usr/sbin/nologin apache
+#tail -1 /etc/passwd
+-r is used to create system account,the account will receive UID of system
+account range as defined in /etc/login.defs
+-d used to define home directory
+By default to new account home directory is created using /home directory
+
+/etc/skel:
+when using -m the home directory for that account is created.
+The contents of /etc/skel are copied into the home directory
+/etc/skel typically contains shell configuration files.(.profile,.bashrc etc)
+
+-u to specify UID,it is common practice to assign same UID for an account across multiple systems.
+#useradd -c "MySQL Server" -d /opt/mysql -u 97 -s /usr/sbin/nologin mysql
+#tail -1 /etc/passwd
+Linux system uses UID to determine file ownership.
+
+Delete account:
+#userdel mithun
+#userdel -r mithun,-r used to delete user's home diretory.
+#ls /home
+
+Update/Modify existing user account:
+usermod [options] username
+-c "Comments"
+-g group
+-G group1,group2
+-s /shell/path
+
+#grep mysql /etc/passwd
+#usermod -c "MySQL User" mysql
+#grep mysql /etc/passwd
+
+\etc\group: group details are stored there.
+group_name:password:GID:accoubt1,account2
+
+Password is stored in etc/gshadow file
+
+#groups root,display group of the account/username
+
+To create a group:
+gorupadd [options] group_name
+#groupadd web
+#tail -1 /etc/group
+#groupadd -g 2500 db,-g is used for GID
+#tail -1 /etc/group
+
+groupdel group_name
+#groupdel db
+
+To change the properties of existing group:
+groupmod [options] group_name
+-g GID,change the group id
+-n GROUP,renaming group
+
+#grep web /etc/group
+#groupmod -g 1234 web
+#groupmod -n http web
+
+Group Creation:
+#groupadd writers
+#groupadd tv
+#group movie
+#tail -3 /etc/group
+#useradd -c "Carlton Cuse" -g writers -G tv -m -s /bin/bash ccuse
+#passwd ccuse
+#groups ccuse
+
+#useradd -c "David Fury" -g writers -G tv -m -s /bin/bash dfury
+#passwd dfury
+#groups dfury
+
+#tail -3 /etc/group
+#grep 1002 /etc/passwd
+
+Account information is stored in /etc/passwd and /etc/shadow file
+
+
+
+ 
+
+
+
+
+
+
+
+
+ 
+
+
+
+

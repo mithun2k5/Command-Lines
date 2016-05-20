@@ -88,7 +88,7 @@ Permission
 -rw-rw-r--;
 -;regular file
 d;directory
-l;symbolic link
+|;symbolic link
 
 Permission Categories:
 U;user
@@ -102,17 +102,31 @@ or
 #groups root
 
 Add permission to particular file:
+#ls -l sales.data
 #chmod u+w example.txt
 #chmod u+wx example.txt
 #chmod u+rwx,g-x example.txt
 #chmod a=rw example.txt
 #chmod u=rwx,g=rx,o= example.txt;means no permission to others.
+#chmod a=r sales.data
 
 Changing Groups:
 #groups
 #chgrp default example.txt
 
-Umask Command: Works in the opposite way as mode given to chmod.
+File Creation Mask:
+#####################################
+File creation mask determines default permissions.
+If no mask were used permissions would be:
+777 for directoriers
+666 for files
+
+Umask Command: 
+#########################################
+umask [-S] [mode]
+Sets the file creation mask to mode,if given
+Use -S to for symbolic notation means,it will display u=rwx,g=rx,o=rx
+Works in the opposite way as mode given to chmod.
 #umask -S
 
 Base permission for directory is 777 and for file is 666.
@@ -123,6 +137,90 @@ and initial umask is 022
 #umask -S
 #touch testing;create a file or update a timestamp.
 #umask 007
+
+Special Modes:
+#######################################################
+setuid
+setgid
+sticky
+
+Setuid:
+##########################
+setuid=Set User ID upon execution,when this bit is set,it forces
+a program to run as the owner of the file,regardless whoever run the program.
+-rwsr-xr-x  1 root root /usr/bin/passwd
+Here execute portion of the owner field is set to s,so that when the 
+program is executed,it will get the root privilege.
+ping command also uses Setuid.
+chsh command also,this is used by user to change their shell.
+setuid files are an attack surface thats why this bit is not used in
+shell scripts, it is only used in binary files.
+
+Octal Permissions:
+setuid setgid sticky
+0        0      0    ;Value for off
+1        1      1    ;Binary value for on
+4        2      1    ;Base 10 value for on
+
+Adding the Setuid Attribute:
+####################################################
+chmod u+s /path/to/file
+chmod 4755 /path/to/file
+chmod g+s /path/to/file;set setgid bits
+chmod 2755 /path/to/file
+chmod ug+s /path/to/file,set both setuid and setgid
+chmod 6755 /path/to/file
+chmod o+s /path/to/directory;set sticky bit
+chmod 1777 /path/to/directory
+
+Removing the Setuid Attribute:
+###################################################
+chmod u-s /path/to/file
+chmod g-s /path/to/file
+chmod 0755 /path/to/file
+chmod 0-t /path/to/directory
+chmod 0777 /path/to/directory
+
+Finding Setuid Files:
+##################################################
+find / -perm /4000;last forward slash is used to find-out any files 
+which permission bit is set.
+find / -perm /4000 -ls
+find / -perm /2000 -ls,finding setgid bit
+
+
+Setgid:
+####################################################
+setgid=Set Group ID upon execution
+It causes the program to run with group privilege of the file rather than
+group privilege of the user executing the file.
+-rwxr-sr-x 1 root tty /usr/bin/wall
+s will be there,in the excute section of the group field
+
+setgid on Directories:
+setgid on a directory causes new files to inherit the group of the directory.
+setgid causes directories to inherit the setgid bit.
+Great for working with groups.
+
+Integrity Checker:
+find command can be used as an integrity checker.
+
+The Sticky Bit:
+##########################################
+Use on a directory to only allow the owner of the file/directory to delete it.
+Used on /tmp:
+drwxrwxrwt 10 root root 4096 Feb 1 09:47 /tmp
+
+Reading ls Output:
+#######################################
+A capitalized special permission means normal permission is not set
+A lowercase special permission means normal permission set.
+#ls -l test
+Suppose,644 permission is given -rw-r--r--
+#chmod u+s test,it will show,-rwSr--r--
+#chmod u+x test
+#ls -l test,it will show, -rwsr--r--
+ 
 
 Finding Files and Directories:
 #####################################################
@@ -375,9 +473,13 @@ shell process is bash process.
 #ps -ef | less
 #ps -fu root
 #ps -ef --forest
+#ps -eH,display a process tree
 #pstree
-#top
-#htop
+#top,interactive process viewer
+#htop,interactive process viewer
+
+#ps
+#ps -p 1530
 
 Background and Foreground Processes:
 command &;start command in background
@@ -386,7 +488,7 @@ Ctrl-z;suspend the foreground process
 bg [%num];background a suspended process
 fg [%num];foreground a background process
 kill;kill a process by job number or PID
-jobs;list jobs
+jobs [%num];list jobs
 
 Killing Processes:
 Ctrl-c;kills foreground process
@@ -413,7 +515,7 @@ Starting a background process:
 #kill %1
 #kill -l;will show list of signals that we can send it to the process.
 #kill -9
-#kill -kill
+#kill -KILL
 
 Scheduling Repeated Jobs using Cron:
 #################################################
@@ -440,7 +542,7 @@ Run for first 5 minutes of the hour.
 Crontab Command:
 crontab file;install a new crontab from file.
 crontab -l;list cron jobs.
-crontab -e;edit cron jobs.
+crontab -e;edit cron jobs,it will use EDITOR environment variable.
 crontab -r;remove cron jobs.
 
 #vi cron-job
@@ -464,10 +566,12 @@ Setting environment variable:
 #export TEST=1
 #echo $TEST
 #su root;swtiched to root user
-#su - root;switched to root environment
-#su -c 'echo $ROOT_HOME' - root
+#su - root;switched to root environment,hyphen(-) is used to provide an environment similar 
+to what the user would expect had the user logged in directly.
+#su -c 'echo $ROOT_HOME' - root,-c is used to specify command to be executed.
 
 sudo;execute a command as another user,typically superuser.
+sudo does not password of other user account.
 
 sudo -l;list available commands.
 sudo command;run command as root
@@ -481,7 +585,7 @@ sudo -u root -s
 sudo -u user -s,start shell as user
 
 
-#sudo /etc/init.d/oracle start;to start a application named as oracle as sudo user.
+#sudo /etc/init.d/oracle start;to start an application named as oracle as sudo user.
 #sudo -u bob /opt.bobapp/bin/start
 #sudo su - root
 #sudo -s
@@ -509,13 +613,25 @@ export histsize=1000
 Installing and Managing Software:
 ########################################################
 Package: a collection of files.
+
+Package Manager:
+installs,upgrades and removes packages
+manages dependencies
+keeps track of what is installed
+
 RPM:Redhat Package Manager
 
 yum search string;Search for string
 yum info [package];display info
 yum intall [-y] package;install package
+rpm -qa,list all installed packages
+rpm -qf /path/to/file,list the file's packages
+rpm -ql package,list package's file
+rpm -ivh package.rpm, install package
+rpm -qa | sort | less
 yum remove package;remove package
 rpm -e package;erase package
+
 #yum search telnet
 #su -;switch to root user
 #cd /home/cloudera/Downloads
@@ -524,6 +640,9 @@ rpm -e package;erase package
 #rpm -qa | less;query all packages installed in the system
 #rpm -qa | sort | less
 #which which;to check 'which' command belongs to which package
+which command searches the path of executable in system paths set in
+$PATH environment variable.
+
 #rpm -qf /usr/bin/which
 #rpm -rl which
 
@@ -541,3 +660,119 @@ Daemon process is a long-running background process that answers requests for se
 #whoami;shows username
 #ssh adminuser@X.X.X.X 
 #putty;if putty is installed in the linux system
+
+Tab Completion:
+#############################
+Tab completion can be used:
+1.File names
+2.Directory names
+3.Command names
+4.Command arguments
+
+Programmable completion is a feature of bash shell to support
+command's argument to auto-completed.
+
+#This is using Ubuntu server:
+To enable this feature:
+#. /etc/bash_completion
+#cat .bashrc
+#sudo vi /etc/bash.bashrc,to enable it globally.
+#man subdomain.conf
+
+Repeat as root:
+#########################################
+#adduser sam
+#sudo !!, to execute the above command line with sudo privilege
+#id sam
+#userdel -r sam
+#sudo !!,here !! is used as event designator and will use most recent command
+in command history.
+#whoami
+#uptime
+#df -hT /boot
+#!u,it will uptime command result.
+#sudo !w,it will show we are running command with root privilege.
+#useradd jim
+#su -c "!!"
+
+Rerun a command starting with string:
+#####################################
+examples:
+#!d
+#!du
+#!df
+#cd /mnt/data/restore 
+#df -h .,to check disk usage of the current directory
+#tar xf ~/backup.tar,to extract file in this diretory.
+#!d
+#sudo -s,start a shell with root account
+#cd /etc/opt
+#mkdir myapp
+#useradd myapp,to create user for that application
+#chown myapp myapp,change the owner of the application as the iwner of the directory
+#chmod 700 myapp
+#cd /var/log
+#!m
+#!cho
+#!chm
+
+Reuse Arguments of a Command:
+#############################################
+"!*"
+#touch file1 file2 file3
+#ls !*,it will show as ls file1 file2 file3
+#vi !*,to edit those files
+#cat !*
+#mv !* /tmp/
+#ls /tmp/file*
+#cd tmp
+#mkdir one two three
+#chmod 700 !*
+#ls -l
+# grpe -i error /var/log/syslog,grpe is a typo
+#grep !*,it will execute the arguments of the above command.
+#sudo !!,to execute the above line with sudo privilege
+
+Strip out comments and blank lines:
+###################################################
+grep command can be used to strip out comments and blank lines.
+#grep -Ev '^#|^$' file.txt,-E is used to enable extended regular expression,-v is used to 
+invert our matches,^ in regular expression indicates beginning of the line
+^# lines begin with #,| means or,^$ means line begins with comment or blank lines
+#cd /etc/httpd/
+#ls
+#cd conf
+#ls
+#cat httpd.conf
+#grep -Ev '^#|^$' httpd.conf | less
+#wc -l httpd.conf
+##grep -Ev '^#|^$' httpd.conf | wc -l
+
+Reuse the last item of a command:
+#####################################
+"!$"
+#mkdir restore
+#cd !$,it will take the shell to the restore directory
+#unzip /home/jason/Downloads/backup.zip
+#rm !$,it will /home/jason/Downloads/backup.zip file
+#mkdir mispel
+#rmdir !$
+#mkdir !$l,it will create directory named as mispell
+#sudo useradd -m -s /bin/bash jimmy,to create user
+#sudo passwd !$,it will create password for jimmy
+#sudo chage -M 60 !$,to make sure to change user's password every 60 days.
+#sudo chage -l !$,to list the property of this account
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,190 @@
+***Learning source: YouTube Channel-ITversity
+
+Install ntp service on CentOS VM:
+##############################################
+All cluster environment has to be synced with the same time,ntp plays an 
+important role,software like hadoop,cassandra use ntp
+to check ntpd is running or not?
+#service ntpd status
+
+#yum -y install ntp
+
+#service ntpd start
+
+to enable on boot start for this service
+#chkconfig --list ntpd
+#chkconfig ntpd on
+
+to check configuration file:
+#cd /etc/
+#vi ntp.conf
+
+Setup Apache Web Server or HTTPD:
+######################################################
+1. Install httpd
+2. modify /etc/httpd/conf/httpd.conf
+3.create http docs directory
+4.start httpd service - service
+5. Enable onboot start - chkconfig
+6. update your windows hosts file
+7. Validate by testing url on your browser
+
+
+#yum -y install httpd (it will install apache web server)
+
+#cat /etc/sysconfig/network
+Form here, we have to find-out hostname and this hostname should be
+placed in the virtualhostname
+#vi /etc/httpd/conf/httpd.conf,
+(
+ServiceName www.centos66demo.mitun.com:80
+NameVirtualHost hostname:80
+Here,hostname means actual hostname
+Press control+end to go to the end of the file.
+Need to update:
+VirtualHost hostname:80
+Then need to change all names to centos66demo.mitun.com
+DocumentRoot also needs to updated. /var/www/docs/centos66demo.mitun.com
+)
+
+#mkdir -p /var/www/docs/centos66demo.mtiun.com
+#cd /var/www/docs/centos66demo.mtiun.com
+#vi index.html (for testing apache webserver)
+(hello world)
+#service httpd restart
+to test:
+#telnet localhost 80
+#chkconfig --lsit httpd
+#chkconfig httpd on
+
+Need to update /etc/hosts file also
+#vi /etc/hosts
+(X.X.X.X)  www.centosdemo66.mitun.com  centos66demo.mitun.com  centos66demo  the other two entries are urls
+#telnet www.centos66demo.mitun.com 80 
+
+Centos yum:
+##########################################
+Yum: tool
+Directly download and install from internet
+install from local repository
+Install from enterprise yum repository server
+Yum download software from Redhat public repository or 3rd party repository
+
+#cd /etc/yum.repos.d
+#ls -ltr
+There will be repository files which will point to the redhat and centos
+public repository.Basically it contains urls.
+In this way all servers in the enterprise network can download softwares
+but all of them are behind firewall.
+
+We can install local repository server or connected to yum server to download
+software from internet rather than connected to the public repository directly.
+
+For local repository creation, we have to update configuration file in the 
+/etc/yum.repos.d
+
+In order to create yum server in the enterprise netwrok we have to install
+http service or ftp service to talk with yum server.
+
+Centos Yum Repository Server:
+############################################################
+
+Install from third party repository:
+To install any softwares we need two set-up files:
+1. repository file
+2. configuration file
+
+#uname -a,will give actual linux version
+
+to insall from third party repository we, have to copy the repository file link
+to the local /etc/yum.repos.d file.
+
+#wget -nv repository_file_link -o /etc/yum.repos.d/ambari.repo(this is a filename)
+wget is a free utility for non-interactive download from the web.
+-nv,non-verbosse output
+-o,output file
+#yum repolist,to check repository list
+#ls -ltr /etc/yum.repos.d,it will show ambari.repo
+#yum -y install ambari-server(it is a third-pary software application)
+
+To setup local repository server:
+#########################################################
+We have to download oracle linux 6,tarball software at first
+Tarball contains bunch of repository packages into one tarball.
+#wget link_to_the_file
+#tar xzf downloaded_file
+#ls -ltr
+#cd ambari-2.1.0
+#ls -ltr
+#find . -name "*"
+#cat /etc/yum.repos.d/ambari.repo
+#find . -name "RPM-GPG-KEY-Jenkins"
+#vi /etc/yum.repos.d/ambari.repo
+(
+basurl=file:///root/ambari-2.1.0/centos6
+gpgkey=file:///root/link got from above command
+)
+
+#yum repolist
+#yum -y install ambari-server
+
+Set-up yum repository server:
+#######################################################
+Yum repository server using httpd web server
+To check http server is configured and running:
+#telnet localhost 80
+#vi /etc/httpd/conf/httpd.conf
+go to the end of the file and need to collect information of the
+document root.
+#cd link from the above command
+#mkdir yum_repository
+#cd yum_repository
+#mv -f ~/ambari-2.1.0 .
+#ls -ltr
+#vi /etc/httpd/conf/httpd.conf
+from there need to copy server name
+#vi /etc/yum.repos.d/ambari.repo
+(
+baseurl=http://www.centos66demo.mitun.com/yum_directory/ambari-2.1.0/centos
+gpgkey=http://www.centos66demo.mitun.com/yum_repsository/ambari-2.1.0...rest of the links will be the same
+)
+#telnet www.centos66demo.mitun.com 80
+if it is not working,then need to update /etc/hosts/
+#yum repolist
+#remove ambari-server
+Download from yum server using http server
+#yum -y install ambari-server
+
+Setup parallel ssh:
+#########################################################
+is the tool provided by google
+it is important because sometimes we need to perform same task in hundred of servers
+in the production environment.
+go to www.google.com
+search parallel ssh
+need to copy gitclone link
+#sudo link
+#sudo yum -y install git
+#ls -ltr
+#export PATH=$PATH:/home/mitun/parallel-ssh/bin
+#vi ~/.bashrc
+( 
+export PATH=$PATH:/home/mitun/parallel-ssh/bin
+)
+#pssh 
+to run pssh command need to know two things:
+scripter command and hosts name
+#vi cluster_host.txt
+(
+ip-10-0-0-11.ec2.internal
+ip-10-0-0-12.ec2.internal
+)
+#pssh -v -t 0 -l ec2-user -h cluster_hosts.txt -x "-t -t -oStrictHostKeyChecking=no" 
+'touch testing'
+-t -t is used to enable tty,if any command needs sudo access,this command will not fail
+-x is used to execute the command
+#ls -ltr
+#ssh ec2-user@ip-10-0-0-12.ec2.internal
+
+Parallel ssh can run script,copy into the multiple servers in parallel.
+ 

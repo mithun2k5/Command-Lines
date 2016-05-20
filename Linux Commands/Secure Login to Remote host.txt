@@ -36,4 +36,4 @@ cat id_rsa.pub >> .ssh/authorized_keys
 
 After that, an user can login to the remote host using ssh command without using password.
 
-#scp -r .ssh root@192.168.225.40:~;r is used fo recursive
+#scp -r .ssh root@192.168.225.40:~;r is used for recursive
