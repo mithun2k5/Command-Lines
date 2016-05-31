@@ -1,0 +1,1060 @@
+**Learning Source: www.udemy.com
+#########################################
+
+Linux Security and Hardening: The Practical security guide
+#########################################################
+
+How to create hidden file in linux:
+#######################################
+Just need to put DOT(.) in front of file-name and file will be hidden and in that case file will not be removed if anybody writes "rm *" command.
+
+Security:
+###################
+Security is a series of trade-offs.
+Convenience vs security
+No passwords = easy to use,not secure.
+System powered off = secure,not usable.
+
+Linux is only as secure as you make it.
+
+Linux is a multiuser system.
+The superuser is the root account,root is all powerful and all other accounts are normal accounts.
+
+Linux is not immune.
+
+Direct login should not be allowed.At least user should login to their personal account first and then switch to the root or shared account as it will create entry in the log file.
+
+Multifactor Authentication:
+######################################
+Something you know + something you have or something you are.
+
+Examples:
+account password + phone to receive the one time password.
+account password + fingerprint
+
+The Principle of Least Privilege:
+##################################
+The use of minimum privileges in order to accomplish a task.
+This principle is also known as least authority
+
+
+File Attributes(xattr):
+#################################################
+Examples: ext2,ext3,ext4,XFS,JFS
+
+Attribute: i immutable:
+The file cannt be: modified,deleted,renamed,hard linked to,
+unset the attribute in order to delete it.
+
+Attribute: a append:
+Append only,cannt be deleted when this attribute is set.use this attribute in log files.
+
+Supporting Documents for attribute checking is: man ext4.
+
+
+Viewing Attributes:
+
+#lsattr /etc/motd
+outout ---------------- /etc/motd;means no attributre set
+#lsattr /var/log/messages
+output -----a--------- /var/log/messages;means attribute is set
+
+Modifying Attributes:
+chattr command:
++,add
+-,remove
+=,sets the exact attributes.
+
+#chattr +a /var/log/messages
+#chattr -a /var/log/messages
+#chattr =is /etc/hosts
+#lsattr /etc/hosts
+output: s-----i------- /etc/hosts;means both s=secure delete and i=immutable attributes are set.
+#chattr = /etc/hosts
+output: ---------------- /etc/hosts;means it will delete all attributes.
+
+#cd /var/log/httpd
+#chattr =a *,to change the attributes in all the files of that httpd directory.
+
+
+Access Control Lists:
+#######################################
+ACL provides additional control.
+For example to give one use access to a file.ACL is better than traditional solution as traditional solution is to create another group while increasing management overhead of groups.
+
+ACLS:
+Ensure file system mounted with ACL support.
+mount -o acl /path/to/dev /path/to/mount
+tune2fs -o acl /path/to/dev;for typical ext file-system.
+
+Check:
+tune2fs -l /path/to/dev | grep options
+
+Types of ACLs:
+Access: Control access to a specific file or directory.
+Default: Used on diretory only,files without access rules use the default ACL rules.
+
+ACLs can be configured:
+Per user,
+per group,
+for users not in the file's group
+Via the effective rights mask
+
+Creating ACLs:
+setfacl
+may need to install ACL tools.Typically package name is ACL.
+
+Modify ot add ACLs:
+setfacl -m ACL(rule) File or Directory
+
+User ACLs/Rules:
+u:uid:perms,set the access ACL for a user.
+setfacl -m u:mithun:rwx start.sh
+
+Group ACLs/Rules:
+g:gid:perms,set the access ACL for a group.
+setfacl -m g:sales:rw sales.txt
+
+Mask ACLs/Rules:
+m:perms,set the effective rights mask.
+it is used to control permission of all users defined in ACL.
+setfacl -m m:rx sales.txt
+
+Other ACLs/Rules:
+o:perms,set hte access ACL for others
+setfacl -m o:r sales.txt
+
+Creating multiple ACLS at once:
+setfacl -m u:bob:r,g;sales:rw sales.txt
+
+Default ACL:
+For example,file created in the sales directory,could read,worite by other users in that group,it could be controlled by default ACL.
+d:[ugo]:perms,set the default ACL.
+setfacl -m d:g:sales:rw sales
+
+Setting ACLs Recursively (-R):
+setfacl -R -m g:sales:rw sales
+
+Removing ACLs:
+setfacl -x ACL(Rule) File or directory
+setfacl -x u:mithun sales.txt
+
+To remove all ACL entries for a file:
+setfacl -b file or directory
+setfacl -b sales.txt
+
+Detecting Files with ACLs:
+ls -l
+-rw-rw-r--+ 1 root root 0 Feb 16 21:09 sales.txt,the additional + sign indicates this file has ACL.
+
+Viewing ACLs:
+getfacl sales.txt
+
+#mkdir /usr/local/projectx
+#cd /usr/local/
+#chgrp projectx projectx
+#chmod 775 projectx
+#ls -ld projectx
+#su - sam,swithced to a user that is in that group projectx.
+#groups
+#cd /usr/local projectx/
+#echo stuff > notes.txt
+#cat notes.txt
+#ls -l notes.txt
+
+Now, sam wants bob to access that file,though bob is not a member of projectx group.
+
+#setfacl -m u:bob:rw notes,txt
+#getfacl notes.txt
+#su - bob
+#groups
+
+Without ACL it is not possible for bob to access this file in that projectx group.
+
+To remove Bob access:
+#su - sam
+#cd /usr/local/projectx
+#setfacl -x u:bob notes.txt
+#getfacl notes.txt
+#cd projectx
+#touch root-was-here
+#ls -l
+#setfacl -m d:g:preojectx:rw .
+#getfacl .
+#setfacl -R -m g:projectx:rw .
+
+Rootkits:
+###########################################
+Software used to gain root access abd remain undetected.
+They attempt to hide from system administrators and antivirus software.
+For example:
+user space rootkit replace common command such as ls,ps,find,netstat etc.
+kernel level rootkits add or replace parts of the core operating  system.for example:Loadable kernel module(LKMs),/dev/kmem,/dev/mem
+
+Rootkit Detection:
+Use a file integrity checker for user space rootkits. (AIDE,tripware,OSSEC,etc.)
+Identify inconsistent behavior of a system.for example,high CPU utilization without corresponding processes.
+High network load or unusual connections.
+
+chkrootkit:
+shell script that searches for rootkits.
+http://www.chkrootkit.org
+
+RootKit Hunter/RKHunter:
+shell script that searches for rootkits.
+http://rkhunter.sourceforge.net
+
+#rkhunter --update
+#rkhunter ---propupd, will check files and directories against previously known states.When this command executes,rkhunter will trust the current state of the machine.
+#rkhunter -c,checking command by rkhunter.
+#cat /var/log/rkhunter.log
+#rkhunter -c --rwo,only report warning only.
+#rkhunter --cronjob
+
+Rootkit Hunter Configuration:
+/etc/rkhunter.conf:
+mail-on-warning=admin@example.com,rkhunter will email,if any warning is detected.
+
+ALLOWHIDDENDIR="/dev/.udev"
+ALLOWHIDDENFILE="/dev/.blkid.tab"
+
+OSSEC - http://ossec.github.io/
+Host Intrusion Detection System(HIDS)
+More than just rootkit detection: log analysis,file integrity checking,alerting.
+Syscheck module: user mode rootkit detection.
+Rootcheck module:both for user mode and kernel mode rootkit detection.
+Searches for file names known to be associated with user mode rootkits.
+Signature based rootkit detection.
+
+Rootkit Removal:
+Keep a copy of the data if possible.
+Learn how to keep it from happening again.
+#ls
+#tar zxvf rkhunter-1.4.2.tar.gz
+#cd rkhunter-1.4.2
+#./installer.sh --install
+#rkhunter --update
+#rkhunter --propupd
+#rkhunter -c 
+#cat /var/log/rkhunter.log
+#grep Warning /var/log/rkhunter.log
+#rpm -qf /bin/which,to check under which package the file belongs to.
+#rpm -V debianutils(package name),verify the package
+#echo $?,to check exit status,which will show 0
+#vi /etc/rkhunter.conf,to edit the configuration to add an exception.
+(
+SCRIPTWHITELIST=/bin/which
+MAIL-ON-WARNING=mithun2k5@yahoo.com
+MAIL_CMD=mailx -s "[rkhunter] Warnings found for ${HOST_NAME}" 
+)
+#rkhunter --propupd
+#rkhunder -c --rwo
+#which rkhunter,it will show the installed path of that software.
+#crontab -e
+#3
+(
+0 0 * * * /usr/local/bin/rkhunter --cronjob --update > /var/tmp/rkhunter.cronlog 2>&1(to redirect std error to std output)
+)
+
+Single User Mode:also referred to as maintenance mode and runlevel 1,is a mode of operation of a computer running Linux and provides as few services as possible and only minimal funtionality.Allows unrestricted access.
+
+Cloud: At some point,the cloud is real equipment.
+Your data is on theri storage systems.
+The provider has access to your virtual disks.
+If encryption is available,use it.
+
+Virtual Machine: A virtual machine is a software computer that,like a physical computer,runs an operating systems and application.The virtual machine is comprised of a set of specification and configuration files and is backed by the physcial resources of a host.
+
+To start with single user mode:
+find-out linux kernel and write:
+s or S or 1
+If the machine runs with systemd,then write:
+systemd.unit=rescue.target,it will start with single user mode.
+or rescue,to run with systemd
+Hence,it will prompt root shell.
+
+But,recent distribution requires root password while loging via single user mode.To enable root password with single user mode command:
+centos login:root
+password:****
+#vi /etc/sysconfig/init
+Need to change from SINGLE=/sbin/sushell to SINGLE=/sbin/sulogin
+#reboot
+
+If system is running with systemd:
+#cd /lib/systemd/system
+#vi emergency.service rescue.service
+Need to change in emergencey.service and rescue.service files:
+ExeStart=-/bin/sh -c "/usr/sbin/sulogin"
+
+Securing the Boot Loader:
+####################################################
+When system boots, it start init system or systemd system.It can bypass also by starting shell directly. To do this,go to the linux kernel setting and write:
+init=/bin/bash
+To protect this, we need password for the boot loader.
+#cd /etc/grub.d
+#ls
+#vi 40_custom
+(
+set superusers="root"
+password root root
+)
+To encrpt the password:
+#grub2-mkpasswd-pbkdf2
+#enter password:
+#reenter password:
+#cat 40_custom
+Need to config the 40_custom file as:
+password_pbkdf2 root grub.pbkdf2.....
+to rebuid the grub.cfg file
+#grub2-mkconfig -o /boot/grub2/grub.cfg
+#reboot
+
+This protection can also bypass by inserting bootable device through CD,DVD etc if we have physical access.
+#df -h
+#cd /mnt/sysimage
+#cd boot
+#cd grub2/
+#ls -altr
+#vi grub.cfg
+#reboot
+
+Disk Encryption:
+#########################################
+OS needs unencrypted access.
+
+Disk Encryption for Linux:
+dm-crypt-device mapper crypt,provides transparent disk encryption.It is a kernel level
+encryption subsystem.
+dm-crypt creates a new device in /dev/mapper
+
+physical block device: /dev/sda2
+encryption/decryption: dm-crypt
+virtual block device: /dev/mapper/home
+filesystem: ext4
+files and directories: /home
+ 
+Mouting a filesystem simply means making the particular filesystem accessible at a 
+certain point in the linux direcctory tree.
+
+LUKS:
+###################################################
+Linux Unified Key Setup:is a standard for Linux Disk Encryption.
+Front-end for dm-crypt.
+Multiple passphrase support.
+Portable as LUKS stores setup information in the partition header.
+Great for removable media,too
+
+Encrypting a New Device:
+#################################################
+Setting up LUKS on a New Device:
+Need to add addditional disk inside the server.
+#yum search cryptsetup
+#sudo yum -y install cryptsetup
+#sudo fdsik -l| less
+#sudo shred -v -n 1 /dev/sdb,-n is the number of iteration
+writing random data to this disk
+Now,need to initialize the device.
+#sudo cryptsetup luksFormat /dev/sdb
+
+After giving passphrase,we need to open the device:
+#sudo cryptsetup luksOpen /dev/sdb /opt,here /opt is used to create the virtual block device in /dev/mapper
+
+#ls -latr /dev/mapper |tail
+
+#ls -l /dev/mapper/opt
+
+Now,virtaul block device is created in /dev/mapper/opt and this block device can be used as a normal block device and we put filesystem directly on it.
+#sudo mkfs -t ext4 /dev/mapper/opt
+Now,we need to mount our filesystem on /opt.
+#sudo vi /etc/fstab
+(
+/dev/mapper/opt /opt ext4 defaults 0 0;/opt is mounted on /dev/mapper/opt
+)
+
+#sudo mount /opt
+#ls -l /opt
+#df -h /opt,it will show /opt is mounted on /dev/mapper/opt
+#echo "hello" | sudo tee -a /opt/hello.txt
+#cat /opt/hello.txt
+In order to mount during boot-time,we need to make entry in /etc/crypttab 
+opt /dev/sdb none luks,opt is the virtual block device that will be created in the /dev/mapper,none is used for passphrase and here none is given to prompt for password on boot,luks is used for standard luks format.
+#sudo cat /etc/crypttab
+#sudo blkid
+#sudo blkid | grep -i luks
+
+If we don't wnat to mount automatically during boot-time:
+we need to delete command line from the below mentioned files:
+/etc/crypttab
+/etc/fstab
+
+Manual process of using LUKS:
+Need to open it at first:
+#sudo cryptsetup luksOpen /dev/sdb opt 
+#ls -l /dev/mapper/opt
+#sudo mount /dev/mapper/opt /opt
+#ls -l /opt
+#sudo unmount /opt
+#sudo cryptsetup luksClose opt
+#ls -l /dev/mapper/opt,virtual block device will be removed at this time.
+
+To use file as the device to encrypt
+#sudo mkdir /data
+#sudo fallocate -l 100M /data/opt
+#sudo strings /data/opt,strings is used to pull-out any string from that file
+#sudo dd if=/dev/urandom of=/data/opt bs=1M count=100
+#sudo strings /data/opt
+#sudo cryptsetup luksFormat /data/opt
+#sudo cryptsetup luksOpen /data/opt opt
+#sudo mkfs -t ext4 /dev/mapper/opt
+#sudo mount /dev/mapper/opt /opt
+#ls -l /opt
+#df -h /opt
+#sudo blkid
+#sudo blkid | grep -i luks
+
+
+Disabling Ctrl+Alt+Del(Systemd)
+#sysmtemctl mask ctrl-alt-del.target,it will disable
+#systemctl daemon-reload
+
+For init:
+just need to disable the line from /etc/init file and reload the init process again.
+
+
+Account Security:
+########################################################
+PAM:Pluggable Authentication Modules:is a centralized authentication mechanism that used in linux system.
+
+For example:login program authenticates user by checking in /etc/passwd and /etc/shadow files.
+In case of PAM,login program diretly communicate with PAM and PAM will verify authentication using /etc/passwd and /etc/shadow files.
+
+PAM Configuration Files:
+location:
+/etc/pam.d
+/etc/pam.d/login
+/etc/pam.d/sshd
+
+Format:
+module_interface control_flag module_name module_args
+
+PAM Module Interface:
+auth-Authenticates users,it checks validity of password of a user.
+account-verifies if access is permitted.
+password-changes a user's password
+session-manages user's session
+
+PAM Control Flags:
+what to do after getting particular result
+required-module result must be successful to continue
+requisit-like reuiqred but usera are notified immediately after the failed result and no other moduels are invoked.
+sufficient-authenticates user if no required modules have failed ,otherwise ignored.
+optional-only used when no other modules reference the interface
+causes the result of the module to be ignored.
+includes-inludes configuration from another file.
+Complex control flags:
+attribute=value
+#man pam.d
+
+PAM Configuration Example:
+#######################################################
+Configuration:
+account required pam_nologin.so,so stands for shared object.
+#man pam_unix
+
+
+Linux Account Types:
+#####################################################
+Root,UID=0
+
+System accounts,UID<1000
+Configured in /etc/login.defs
+useradd -r system_account_name
+
+Normal User Accounts:
+UIDs>=1000
+Intended for human(interactive) use.
+
+#man pam_pwquality
+
+Converting Passwords:
+pwconv-convert to shadow passwords.
+pwunconv-convert from shadow passwords.
+
+/etc/shadow format:
+Username
+hashed password
+days since epoch of last password change
+days until change allowed
+days before change required
+days warning for expiration
+days before account inactive
+days since epoch when account expires
+reserved
+
+Display user account expiry info with chage
+#chage -l account;show account aging information.
+#chage -M MAX_DAYS,set the maximum number of days during which a password is valid.
+#chage -E EXPIRE_DATE,date on which the user's account will no longer be accessible.(YYYY-MM-DD)
+to unlock that account,need to use -1 as EXPIRE-DATE.
+#chage -E -1
+#chage -d LAST_DAY,set the last day the password was changed,it is typically used to force the user to change their password during their next login.such as 0 as LAST_DAY.
+
+To set Default account aging option in /etc/login.defs:
+PASS_MAX_DAYS 99999
+PASS_MIN_DAYS 0
+PASS_MIN_LEN 5
+PASS_WARN_AGE 7
+
+In order to keep users from reusing their previous passwords:
+PASSWORD HISTORY:
+PAM Directive:
+passsword required pam_pwhistory.so
+#remember=N
+
+#head -1 /etc/passwd
+#sudo useradd jim
+#sudo passwd jim
+#sudo - jim
+#whoami
+#sudo vi /etc/passwd
+#id
+To print out all accounts that have UID of 0:
+#awk -F: '($3 == "0") {print}' /etc/passwd,_F is used for field separator.
+
+
+Controlling Account Access:
+#######################################################
+Locking and Unlocking accounts:
+passwd -l account
+password -u account
+
+Another way to lock an account or not to use interactively,is locking with nologin as the Shell.
+
+Using Chsh:
+chsh -s SHELL ACCOUNT
+#chsh -s /sbin/nologin mithun
+
+Disable Logins:
+pam_nologin module
+looks for /etc/nologin or /var/run/nologin
+disables logins and displays contents of nologin file.
+
+Monitoring Authentication Logs:
+looking into /var/log/wtmp file:
+#last
+looking into last blocked attempts:/var/log/btmp file:
+#lastb
+Looking into user that last logged-in:/var/log/lastlog file:
+#lastlog
+
+Depends on syslog configuration:
+/var/log/messages
+/var/log/syslog
+/var/log/secure
+/var/log/auth.log
+
+Intrusion Prevention with fail2ban:
+fail2ban:
+Monitors log files
+Block IP address of attacker to prvent brute-force attack.
+Automatic unban
+Not jsut for Linux logins.
+
+Multifactor Authentication:
+Google Authenticator PAM module:
+
+
+Security by Account Types:
+######################################################
+sudo command use is more preferable than su,as sudo command maintains a complete log in the log file.
+
+Disabling root Logins:
+
+pam-securetty
+auth [user_unknown=ignore success=ok \ ignore=ignore default=bad] pam_securetty.so
+
+/etc/securetty:contains list of device one per line where root is allowed to login:
+console
+tty1,first virtual console in the linux machine.
+
+to disable root login:need to use blank /etc/securetty file,even though root access is allowed using single user mode.
+
+Disabling SSH root Logins:
+/etc/ssh/sshd_config
+PermitRootLogin no
+systemctl reload sshd
+
+System/Application Accounts:
+Use one account per service.
+web service(httpd),web service account(apache)
+sshd_config:DenyUsers account1 accountN
+
+Use sudo for all access:
+sudo -u apache apachectl configtest
+
+Deleting Accounts:
+Determine the UID:
+id account
+Delete the account and home directory:
+userdel -r
+Find other files that belong to them on the system:
+find / -user UID
+find / -nouser
+
+#head /etc/pam.d/login
+#w,to show what device user is logged in as
+#vi /etc/securetty 
+to login to 2nd vitual tty(tty2),need to press ctrl-alt-F2 and so on.
+#grep tty2 /etc/securetty
+
+#visudo
+#export EDITOR=nano or vi,to set the EDITOR envrionment variable to use by VISUDO command.
+(
+bob ALL=(root) /usr/bin/yum,it means to allow user bob to run /usr/bin/yum command as root user in all systems.
+)
+#sudo -l -U bob
+#sudo -ll -U bob,it will give more verbose output
+#su - bob
+#sudo -l,it will so what user bob can do as sudo user
+#sudo yum install dstat
+#exit
+To create a file in /etc/sudoers.d
+#visudo -f /etc/sudoers.d/bob
+(
+bob ALL=(ALL) /usr/bin/whoami,to allow bob to run whoami command as anyone in the system
+)
+#sudo -l -U bob
+#su - bob
+#whoami
+#sudo -u mithun whoami
+#sudo -u apache whoami
+To check sudo log file:
+#cat /var/log/secure
+
+
+Network Security:
+###############################################
+Network services: network services,daemons,servers.
+listen on network ports for incoming connections.
+Constantly running in the background.
+Output recorded in log files as these services are not connected with log files.
+Designed to perform a single task.
+
+Securing Network Services:
+Use a dedicated user for each service.
+Port below 1024 are privileged.means they need root privilege to open them.
+
+TCP Wrapper: it is used to allow which hosts are allowed or not allowed in 
+the TCP wrapped aware services which provides additional layer of protection
+after firewall.
+
+WebServer Information Leakage:
+##########################################
+#curl -I http://192.168.19.33
+Web server banners:
+/etc/motd
+/etc/issue
+/etc/issue.net
+
+Displaying Sevices with systemctl:
+##########################################
+#systemctl
+
+Stop and Disable Services:
+################################
+systemctl stop service,it will stop service for now,but after reboot,
+it will start again.
+systemctl stop httpd
+systemctl disable service,it will not enable after system reboot
+systemctl disable httpd
+At first we need to stop the service and then need to disable it.
+
+List listening programs with netstat:
+##########################################
+#netstat -ntulp
+In that output if 0.0.0.0:22 is shown,it means sshd service is listening
+in all IP addresses.
+If any network service only used by localhost then bind it to loopback address,
+so that service will not be available over the outside network.
+
+Port Scanning:
+############################
+nmap HOSTNAME_OR_IP
+nmap localhost
+nmap 10.11.12.13
+
+#nmap 127.0.0.1
+
+#lsof -i,lsof stands for list open files.
+It will show all the listening and established network connections.
+
+Testing a Specific Port:
+################################
+#telnet HOST_OR_ADDRESS PORT
+
+nc or netcat command which attempts to connection to an open port.
+#nc -v HOST_OR_ADDRESS PORT
+
+Xinetd Controlled Services:
+#########################################
+/etc/xinetd.d/service,here services that are supported by xinetd is listed.
+To disable service:
+disable=yes
+To disable xinetd:
+systemctl stop xinetd
+systemctl disable xinetd
+
+Securing SSH:
+#########################################################
+Besides username and password based login,SSH also allows you to 
+connect with key based authentication.
+To allow key based authentication:
+/etc/ssh/sshd_config:
+PubkeyAuthentication yes
+ssh-keygen command to create a key
+ssh-keygen creates two files:
+~/.ssh/id_rsa and 
+~/.ssh/ide_rsa.pub
+
+Add the Public Key to the Remote Host:
+#################################################
+To copy the key,use ssh-copy-id:
+ssh-copy-id [user@]host
+Adds public key to:
+~./ssh/authorized_keys
+
+Force Key Authentication:
+in /etc/ssh/sshd_config:
+PasswordAuthentication no
+This will prevent attackers to login to the account,even though they know
+the account password and hence prevent brute-force attack.
+
+Controlling Root Logins:(/etc/ssh/sshd_config)
+#######################################################
+To disable root logins:
+PermitRootLogin no
+
+To only allow root to login with a key:
+PermitRootLogin without-password
+
+Only Allow Certain Users SSH Access:
+AllowUsers user1 user2 userN
+
+Only Allow Certain groups SSH Access:
+AllowGroups group1 group2 groupN
+
+Deny Certain Users SSH Access:
+DenyUsers user1 user2 userN
+DenyGroups group1 group2 groupN
+
+SSH Port Forwarding:
+####################################################
+
+SSH port forwarding through a system
+ssh -L 8080.google.com:80 server1,all traffic originated from local system on port 8080
+to google.com on port 80 will be forwarded through server1 using ssh connection
+
+Dynamic Port Forwarding/SOCKS:
+####################################################
+ssh -D 8080 server1
+
+Reverse Port Forwarding:
+###############################################
+To configure ssh connection to forward traffic from remote system back to local system.
+
+#sssh -R 2222:127.0.0.1:22
+
+Disable TCP Port Forwarding:
+##########################################
+AllowTcpForwarding no
+GatewayPorts no,it blocks remote connection to the forwarded ports
+
+Bind SSH to a Specific Address:
+###################################
+ListenAddress host_or_address1
+ListenAddress host_or_addressN
+
+Change the Default Port:
+in /etc/ssh/sshd_config:
+Port 2222
+
+Add the New Port to SELinux:
+####################################
+semanage port -a -t ssh_port_t -p tcp PORT
+semanage port -l |grep ssh
+
+Disable the Banner:
+#############################
+Banner none
+#Banner /etc/issue.net
+
+Reload the Configuration:
+systemctl reload sshd
+
+man ssh
+man sshd
+man sshd_config
+
+Linux Firewall Fundamentals:
+##############################################################
+Firewalls control network access.
+Linux firewall=Netfilter+IPTables
+Netfilter is a kernel framework,that provides a series of hooks in various points in a
+protocol stack.
+IPTables is a packet selection system,that gives us ability to perform actions on 
+network packets.
+iptables command line utility is used to control firewall.
+Basic Structure:
+Table is comprised with chain and chain is comprised with rule.
+
+Default Tables:
+There are five standard IPTables:
+Filter,to control incoming and outgoing connections.
+NAT,Network Address Translator
+Mangle,to alter packets,to change TTL configuration
+Raw,used to disable connection tracking
+Security,Used by SELinux
+
+Default Chains:
+INPUT
+OUTPUT
+FORWARD
+PREROUTING
+POSTROTUING
+
+Built-in chain used by each table:
+filter-input,output,forward
+nat-input,output,prerouting,postrouting
+mangle-input,output,forward,prerouting,postrouting
+raw-output,prerouting
+security-input,output,forward
+
+Rules = Match + Target
+Match on:
+Protocol
+Source/Dest IP or network
+Source/Dest Port
+Network Interface
+
+Tragets:
+The target section of rule determines what will happen to the packet
+when there is a match.
+Chain:a target can be name of a chain
+Built-in targets:
+ACCEEPT,it will accept the connection and stop checking with other rules.
+DROP,it will not notify the sender
+REJECT,it will notify the sender
+LOG,it will log using system logger and still will process rules of the chain
+RETURN,it will stop that packet to check with the current chain and it will
+return that packet to the predecessor chain.
+
+If the packet reaches to the last line of a chain,the default chain policy
+will apply to the target.
+
+Configuring Firewall from the Command Line:
+#########################################################
+ip6tables:is for IPv6
+iptables:is for IPv4
+
+iptables -L,display the filter table
+iptables -t nat -L,display the nat table
+iptables -nL,display using numeric output
+iptables -vL,diplay using verbose output
+iptables --line-numbers -L,use line nums
+
+Chain Policy/Default Target:
+set the default target for chain:
+iptables -P chain target 
+#iptables -P INPUT DROP
+
+Appending,Inserting and Deleting Rules:
+iptables -A Chain Rule-specification
+iptables [-t TABLE] -A Chain Rule-specification
+iptables -I chain [RULENUM] Rule-specification
+iptables -D chain Rule-specification
+iptables -D chain rulenum
+
+Flushing rules:
+iptables [-t table] -F [chain]
+
+Firewall Rule Specifications:
+############################################################
+man iptables:
+Option:
+-s source;
+-s 10.11.12.13/24
+-d destination;
+-d 192.168.4.11/19
+-p protocol;
+-p tcp
+-p udp
+-p icmp
+-m Module Module_options,it is used to enable extended packet-matching module.
+man iptables-extensions
+-p PROTOCOL -m PROTOCOL --dport PORT
+-p tcp -m tcp --dport 80 or
+-p tcp --dport 80
+-p PROTOCOL -m PROTOCOL --sport PORT
+-p icmp -m icmp --icmp-type TYPE
+-p icmp -m icmp --icmp-type echo-reply;pong
+-p icmp --icmp-type echo-request;ping
+iptables -p icmp -h,to check ICMP packet type
+-m limit --limit rate[/second/minute/hour/day],is used to limit average rate
+and to match packet based on rate.
+It is used to limit the log entry and limit the denial of service attack.
+-m limit --limit-burst,is used to set inital burst rate.
+-m limit --limit 5/m --limit-burst 10,means first 10 consecutive packets will be
+matched and then 5 packets per minute will be matched.
+-m limit ! --limit 5/s,it inverts the match,means the packet is matched if the 
+limit of 5 per second is broken.
+
+Target/Jump:
+To specify a jump point or target:
+-j TARGET_OR_CHAIN
+-j ACCEPT,built-in target
+-j DROP,built-in target
+-j LOGNDROP,Custom chain
+
+Rule Specification Example:
+###################################################
+iptables -A INPUT -s 216.58.219.174 -j DROP
+#iptables -nL 
+iptables -A INPUT -s 10.0.0.0/24 -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j DROP
+#iptables -nL
+iptables -I INPUT -p tcp --dport 80 -m limit --limit 50/m --limit-burst 200 -j REJECT
+iptables -I INPUT -p tcp --dport 80 -m limit --limit 50/min --limit-burst 200 -m state --state NEW -j REJECT
+
+Creating and Deleting a Chain:
+#########################################
+Create CHAIN:
+iptables [-t table] -N Chain
+Delete CHAIN:
+iptables [-t table] -X Chain
+
+Saving Rules:
+######################
+CentOS/Redhat:
+yum install iptables-services
+service iptables save
+
+it will save configuration file in /etc/sysconfig/iptables
+
+Netfilter/iptable Front-Ends:
+#################################
+Uses iptables command on the back-end.
+Firewalld-CentOS/RHEL
+
+Linux Firewall Demonstration:
+#########################################################
+#iptables -L
+#iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+#iptables -L
+#iptables -nL
+#iptables -A INPUT -p tcp --dport 22 -s 10.0.0.0/24 -j ACCEPT
+#iptables -nL
+#iptables -A INPUT -j DROP;to drop all other packets,that did not match the above rules.
+
+For testing,to connect to the web-server: 
+#nc -v 10.0.0.8 80,nc stands for netcat,it is used for variety of purposes,here is used for connection checking.
+#nc -v 10.0.0.8 22
+
+#iptables -nL --line-numbers
+#iptables -D INPUT 1,to delete rule number-1 in INPUT chain.
+#iptables -nL
+#nc -w 2 -v 10.0.0.8 80,here -w is used for timeout for 2 secs.
+#iptables -D INPUT 2
+#iptables -A INPUT -j REJECT
+#iptables -F,to flush all rules
+#iptables -A INOUT -p tcp --dport 22 -s 10.0.0.0/24 -j ACCEPT
+#iptables -N LOGNDROP,to create new table
+#iptables -A LOGNDROP -p tcp -m limit --limit 5/min -j LOG --log-prefix "iptables BLOCK"
+#iptables -A LOGNDROP -j DROP,after log the packets,this rule will drop the packet.
+#iptables -A INPUT -j LOGNDROP,all packets should come from INPUT chain.
+#iptables -nL
+#tail -f /var/log/syslog
+#nc -w 2 -v 10.0.0.8 80
+
+After that,need to save the rules,in order to activate after each reboot of the system.
+
+
+TCP Wrappers:
+#####################################################
+Host-based networking ACL system.
+Controls access to "Wrapped" services.
+A wrapped service is a network service that is compiled with libwrap support.
+Wrapped Services:
+ldd-prints required shared libraries.
+#ldd /usr/sbin/sshd | grep libwrap
+Can control access by IP address/networks.
+Can control access by hostname/DNS name.
+Transparent to the client and service.
+TCP Wrappers:Used with xinetd.
+
+Xinetd is a super-server,which listens for incoming network requests and dispatches those requestes to the proper services.
+
+Centralized management for multiple network services.
+Runtime configuration.
+
+Configuring TCP Wrappers:
+##################################
+/etc/hosts.allow /etc/hosts.deny
+
+When an connection is attempt to make TCP wrapped service,then
+/etc/hosts.allow is checked first.
+If a match is found,acces is granted,if not then /etc/hosts.deny is checked next.
+It there are no matches in those two files,then access is granted.
+
+Access Rules:
+The rule format for hosts.allow and hosts.deny are the same.
+One rule per line.
+
+Format:
+SERVICE(S) : CLIENT(S) [:ACTIONS(S) ]
+sshd : 10.11.12.13
+sshd,imapd : 10.11.12.13
+ALL : 10.111.12.13,here ALL is a wildcard for all tcp wrapped services.
+sshd : 10.11.12.13,10.5.6.7
+sshd : jumpbox.example.com
+sshd : .example.com
+sshd : jumpbox*.example.com
+sshd : 10.11.12.
+sshd : 10.11.0.0/255.255.0.0
+sshd : /etc/hosts.sshd,this file contains the list of hosts.
+imapd : ALL
+sshd : ALL EXCEPT .hackers.net
+
+IF we want to control the facility and severity of the log messages generated by match:
+
+These rules typically used in /etc/hosts.deny file:
+
+sshd : 10.11.12.13 : serverity emerg
+sshd : 10.11.12.13 : severity local0.alert
+
+TCP Wrappers Logging:
+#/etc/hosts.deny:
+sshd : .hackers.net : spawn /usr/bin/wall "Attack in progress."
+sshd : .hackers.net : spawn /usr/bin/wall "Attack in %a.",%a expands the client address.
+
+Expansions:
+%a(%A) client (server) host address.
+%c client information
+%d daemon process name
+%h(%H) client(server) host name or address
+%n(%N) client(server) host name.
+%p daemon process id
+%s,server information
+%u,client user name(or "unknown").
+%% Expands to a single '%' character.
+
+Deny All:
+##################
+#/etc/hosts.deny:
+ALL:ALL
+
+#/etc/hosts.allow:
+#Explicitly list allowed connections here.
+sshd : 10.11.12.13
+
+
+
